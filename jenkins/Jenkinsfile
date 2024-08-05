@@ -45,16 +45,18 @@ pipeline {
         }
 
         stages {
-        stage('Compile') {
+        stage('Compile VHDL') {
             steps {
-                bat """
-                cd /d "%WORKSPACE%\\QTMP_VCU"
-                echo Compiling VHDL files...
-                "%MODELSIM_HOME%\\vsim.exe" -c -do "vlib work; vcom -2008 -work work source/*.vhdl; vcom -2008 -work work testbenches/*.vhdl"
-                """
+                script {
+                    // Define the ModelSim executable path and commands
+                    def vsimExe = "${env.MODELSIM_HOME}/vsim.exe"
+                    def command = "\"${vsimExe}\" -c -do \"vlib work; vcom -2008 -work work source/*.vhdl; vcom -2008 -work work testbenches/*.vhdl\""
+                    
+                    // Run the command
+                    bat(script: command, returnStatus: true)
+                }
             }
         }
-    }
 
         stage('Run Simulation') {
             steps {
