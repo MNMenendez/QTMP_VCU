@@ -7,6 +7,15 @@ pipeline {
     }
 
     stages {
+        stage('Cleanup') {
+            steps {
+                script {
+                    // Remove existing directory if it exists
+                    bat 'if exist "%WORKSPACE%\\QTMP_VCU" rd /s /q "%WORKSPACE%\\QTMP_VCU"'
+                }
+            }
+        }
+
         stage('Checkout') {
             steps {
                 // Use the full path to Git executable to clone the repository
@@ -14,6 +23,15 @@ pipeline {
                     bat """
                     "%GIT_PATH%" clone https://github.com/MNMenendez/QTMP_VCU.git
                     """
+                }
+            }
+        }
+
+        stage('Verify Files') {
+            steps {
+                script {
+                    // List files to verify presence
+                    bat "dir %WORKSPACE%\\QTMP_VCU"
                 }
             }
         }
@@ -28,7 +46,7 @@ pipeline {
             steps {
                 script {
                     bat """
-                    cd "%WORKSPACE%"
+                    cd "%WORKSPACE%\\QTMP_VCU"
                     "%MODELSIM_HOME%\\vsim.exe" -c -do "vlib work; vcom -2008 and_gate.vhdl and_gate_tb.vhdl"
                     """
                 }
@@ -39,7 +57,7 @@ pipeline {
             steps {
                 script {
                     bat """
-                    cd "%WORKSPACE%"
+                    cd "%WORKSPACE%\\QTMP_VCU"
                     "%MODELSIM_HOME%\\vsim.exe" -c -do "run -all; quit"
                     """
                 }
@@ -56,12 +74,4 @@ pipeline {
     post {
         always {
             echo 'Cleaning up...'
-        }
-        success {
-            echo 'Tests passed successfully!'
-        }
-        failure {
-            echo 'Tests failed. Please check the logs.'
-        }
-    }
-}
+ 
