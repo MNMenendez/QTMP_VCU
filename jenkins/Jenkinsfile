@@ -18,7 +18,6 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                // Use the full path to Git executable to clone the repository
                 script {
                     bat """
                     "%GIT_PATH%" clone https://github.com/MNMenendez/QTMP_VCU.git
@@ -42,17 +41,16 @@ pipeline {
             }
         }
 
-       stage('Compile') {
+        stage('Compile') {
             steps {
                 script {
                     bat """
                     cd "%WORKSPACE%\\QTMP_VCU"
-                    "%MODELSIM_HOME%\\vsim.exe" -c -do "vlib work; vcom -2008 -work work "%WORKSPACE%\\QTMP_VCU\\source\\*.vhdl"; vcom -2008 -work work "%WORKSPACE%\\QTMP_VCU\\testbenches\\*.vhdl""
+                    "%MODELSIM_HOME%\\vsim.exe" -c -do "vlib work; vcom -2008 -work work \\\"%WORKSPACE%\\QTMP_VCU\\source\\*.vhdl\\\"; vcom -2008 -work work \\\"%WORKSPACE%\\QTMP_VCU\\testbenches\\*.vhdl\\\""
                     """
                 }
             }
         }
-
 
         stage('Run Simulation') {
             steps {
