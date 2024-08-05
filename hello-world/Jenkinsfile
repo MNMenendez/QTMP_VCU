@@ -5,7 +5,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 // Checkout the code from your repository
-                git 'https://github.com/yourusername/yourrepository.git'
+                git 'https://github.com/MNMenendez/QTMP_VCU.git'
             }
         }
 
