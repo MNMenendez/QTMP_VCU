@@ -15,7 +15,7 @@ pipeline {
                 // Setup the environment; ensure ModelSim is installed
                 script {
                     // Set environment variables if needed
-                    env.MODELSIM_HOME = 'C:\modeltech64_10.6d\win64\'
+                    env.MODELSIM_HOME = 'C:\\modeltech64_10.6d\\win64'
                 }
             }
         }
