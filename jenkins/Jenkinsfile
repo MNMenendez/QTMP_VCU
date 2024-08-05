@@ -46,7 +46,7 @@ pipeline {
                 script {
                     bat """
                     cd "%WORKSPACE%\\QTMP_VCU"
-                    "%MODELSIM_HOME%\\vsim.exe" -c -do "vlib work; vcom -2008 -work work \\\"%WORKSPACE%\\QTMP_VCU\\source\\*.vhdl\\\"; vcom -2008 -work work \\\"%WORKSPACE%\\QTMP_VCU\\testbenches\\*.vhdl\\\""
+                    "%MODELSIM_HOME%\\vsim.exe" -c -do "run_modelsim.bat"
                     """
                 }
             }
@@ -55,10 +55,7 @@ pipeline {
         stage('Run Simulation') {
             steps {
                 script {
-                    bat """
-                    cd "%WORKSPACE%\\QTMP_VCU"
-                    "%MODELSIM_HOME%\\vsim.exe" -c -do "run -all; quit"
-                    """
+                    // This is now handled by the batch file
                 }
             }
         }
