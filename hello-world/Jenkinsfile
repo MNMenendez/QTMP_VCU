@@ -1,22 +1,23 @@
 pipeline {
     agent any
 
+    environment {
+        // Define the path to the ModelSim installation
+        MODELSIM_HOME = 'C:\\modeltech64_10.6d\\win64'
+    }
+
     stages {
         stage('Checkout') {
             steps {
-                // Checkout the code from your repository
-               //git 'https://github.com/MNMenendez/QTMP_VCU.git'
-                echo 'Run the static analysis to the code' 
+                // Checkout the code from your GitHub repository
+                git 'https://github.com/MNMenendez/QTMP_VCU.git'
             }
         }
 
         stage('Setup') {
             steps {
-                // Setup the environment; ensure ModelSim is installed
-                script {
-                    // Set environment variables if needed
-                    env.MODELSIM_HOME = 'C:\\modeltech64_10.6d\\win64'
-                }
+                // Optionally, set up environment variables if needed
+                echo "ModelSim Home: ${env.MODELSIM_HOME}"
             }
         }
 
@@ -25,7 +26,7 @@ pipeline {
                 script {
                     // Run ModelSim's `vlib` and `vcom` commands to compile VHDL code
                     bat """
-                    %MODELSIM_HOME%\\vsim -c -do "vlib work; vcom -2008 and_gate.vhdl and_gate_tb.vhdl"
+                    "%MODELSIM_HOME%\\vsim.exe" -c -do "vlib work; vcom -2008 and_gate.vhdl and_gate_tb.vhdl"
                     """
                 }
             }
@@ -36,7 +37,7 @@ pipeline {
                 script {
                     // Run the simulation and check the results
                     bat """
-                    %MODELSIM_HOME%\\vsim -c -do "run -all; quit"
+                    "%MODELSIM_HOME%\\vsim.exe" -c -do "run -all; quit"
                     """
                 }
             }
