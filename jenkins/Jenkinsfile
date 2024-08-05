@@ -58,8 +58,8 @@ pipeline {
             steps {
                 script {
                     def vsimExe = "${env.MODELSIM_HOME}/vsim.exe"
-                    def simulationCommand = "\"${vsimExe}\" -c -do \"vsim work.${env.TOP_LEVEL_ENTITY}; run -all; quit\" > simulation.log"
-                    bat(script: "cd /d %WORKSPACE%\\QTMP_VCU && ${simulationCommand}", returnStatus: true)
+                    def simulationCommand = "\"${vsimExe}\" -c -do \"vsim work.${env.TOP_LEVEL_ENTITY}; run -all; quit\""
+                    bat(script: "cd /d %WORKSPACE%\\QTMP_VCU && ${simulationCommand} > simulation.log", returnStatus: true)
 
                     // Convert simulation results to JUnit XML
                     bat "python ${env.CONVERT_SCRIPT} simulation.log ${env.TEST_RESULTS_XML}"
