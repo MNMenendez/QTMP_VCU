@@ -4,14 +4,13 @@ pipeline {
     environment {
         MODELSIM_HOME = 'C:\\modeltech64_10.6d\\win64'
         GIT_PATH = 'C:\\Users\\martin\\AppData\\Local\\Programs\\Git\\bin\\git.exe'
-        TOP_LEVEL_ENTITY = 'and_gate' // Updated to your top-level entity name
+        TOP_LEVEL_ENTITY = 'and_gate'
     }
 
     stages {
         stage('Cleanup') {
             steps {
                 script {
-                    // Remove existing directory if it exists
                     bat 'if exist "%WORKSPACE%\\QTMP_VCU" rd /s /q "%WORKSPACE%\\QTMP_VCU"'
                 }
             }
@@ -20,7 +19,6 @@ pipeline {
         stage('Checkout') {
             steps {
                 script {
-                    // Use the full path to Git executable to clone the repository
                     bat """
                     "%GIT_PATH%" clone https://github.com/MNMenendez/QTMP_VCU.git
                     """
@@ -31,7 +29,6 @@ pipeline {
         stage('Verify Files') {
             steps {
                 script {
-                    // List files to verify presence
                     bat "dir %WORKSPACE%\\QTMP_VCU"
                 }
             }
@@ -48,11 +45,8 @@ pipeline {
         stage('Compile VHDL') {
             steps {
                 script {
-                    // Define the ModelSim executable path and commands
                     def vsimExe = "${env.MODELSIM_HOME}/vsim.exe"
                     def compileCommand = "\"${vsimExe}\" -c -do \"vlib work; vcom -2008 -work work source/*.vhdl; vcom -2008 -work work testbenches/*.vhdl\""
-                    
-                    // Run the compilation command in the correct working directory
                     bat(script: "cd /d %WORKSPACE%\\QTMP_VCU && ${compileCommand}", returnStatus: true)
                 }
             }
@@ -62,17 +56,23 @@ pipeline {
             steps {
                 script {
                     def vsimExe = "${env.MODELSIM_HOME}/vsim.exe"
-                    def simulationCommand = "\"${vsimExe}\" -c -do \"vsim work.${env.TOP_LEVEL_ENTITY}; run -all; quit\""
-                    
-                    // Run the simulation command in the correct working directory
+                    def simulationCommand = "\"${vsimExe}\" -c -do \"vsim work.${env.TOP_LEVEL_ENTITY}; run -all; quit\" > test_results.log"
                     bat(script: "cd /d %WORKSPACE%\\QTMP_VCU && ${simulationCommand}", returnStatus: true)
+                }
+            }
+        }
+
+        stage('List Workspace Files') {
+            steps {
+                script {
+                    bat 'dir %WORKSPACE%\\QTMP_VCU'
                 }
             }
         }
 
         stage('Archive Results') {
             steps {
-                archiveArtifacts artifacts: '**/test_results.log', allowEmptyArchive: true
+                archiveArtifacts artifacts: 'test_results.log', allowEmptyArchive: true
             }
         }
     }
