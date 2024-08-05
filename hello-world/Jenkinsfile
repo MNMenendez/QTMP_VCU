@@ -2,21 +2,25 @@ pipeline {
     agent any
 
     environment {
-        // Define the path to the ModelSim installation
         MODELSIM_HOME = 'C:\\modeltech64_10.6d\\win64'
     }
 
     stages {
         stage('Checkout') {
             steps {
-                // Checkout the code from your GitHub repository
-                git 'https://github.com/MNMenendez/QTMP_VCU.git'
+                // Ensure Jenkins uses the correct Git installation
+                script {
+                    def gitExecutable = 'C:\\Users\\martin\\AppData\\Local\\Programs\\Git\\bin\\git.exe'
+                    def gitUrl = 'https://github.com/MNMenendez/QTMP_VCU.git'
+                    bat """
+                    "%gitExecutable%" clone "%gitUrl%"
+                    """
+                }
             }
         }
 
         stage('Setup') {
             steps {
-                // Optionally, set up environment variables if needed
                 echo "ModelSim Home: ${env.MODELSIM_HOME}"
             }
         }
@@ -24,7 +28,6 @@ pipeline {
         stage('Compile') {
             steps {
                 script {
-                    // Run ModelSim's `vlib` and `vcom` commands to compile VHDL code
                     bat """
                     "%MODELSIM_HOME%\\vsim.exe" -c -do "vlib work; vcom -2008 and_gate.vhdl and_gate_tb.vhdl"
                     """
@@ -35,7 +38,6 @@ pipeline {
         stage('Run Simulation') {
             steps {
                 script {
-                    // Run the simulation and check the results
                     bat """
                     "%MODELSIM_HOME%\\vsim.exe" -c -do "run -all; quit"
                     """
@@ -45,7 +47,6 @@ pipeline {
 
         stage('Archive Results') {
             steps {
-                // Archive the results, if any
                 archiveArtifacts artifacts: '**/test_results.log', allowEmptyArchive: true
             }
         }
@@ -53,7 +54,6 @@ pipeline {
 
     post {
         always {
-            // Clean up or notify
             echo 'Cleaning up...'
         }
         success {
