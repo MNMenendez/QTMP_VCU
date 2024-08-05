@@ -19,6 +19,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 script {
+                    // Use the full path to Git executable to clone the repository
                     bat """
                     "%GIT_PATH%" clone https://github.com/MNMenendez/QTMP_VCU.git
                     """
@@ -37,45 +38,12 @@ pipeline {
 
         stage('Setup') {
             steps {
-                echo "ModelSim Home: ${env.MODELSIM_HOME}"
+                script {
+                    echo "ModelSim Home: ${env.MODELSIM_HOME}"
+                }
             }
         }
 
         stage('Compile') {
             steps {
-                script {
-                    bat """
-                    cd "%WORKSPACE%\\QTMP_VCU"
-                    "%MODELSIM_HOME%\\vsim.exe" -c -do "run_modelsim.bat"
-                    """
-                }
-            }
-        }
-
-        stage('Run Simulation') {
-            steps {
-                script {
-                    // This is now handled by the batch file
-                }
-            }
-        }
-
-        stage('Archive Results') {
-            steps {
-                archiveArtifacts artifacts: '**/test_results.log', allowEmptyArchive: true
-            }
-        }
-    }
-
-    post {
-        always {
-            echo 'Cleaning up...'
-        }
-        success {
-            echo 'Tests passed successfully!'
-        }
-        failure {
-            echo 'Tests failed. Please check the logs.'
-        }
-    }
-}
+    
