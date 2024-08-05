@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         MODELSIM_HOME = 'C:\\modeltech64_10.6d\\win64'
+        GIT_HOME = 'C:\\Users\\martin\\AppData\\Local\\Programs\\Git\\bin'
     }
 
     stages {
@@ -10,10 +11,9 @@ pipeline {
             steps {
                 // Ensure Jenkins uses the correct Git installation
                 script {
-                    def gitExecutable = 'C:\\Users\\martin\\AppData\\Local\\Programs\\Git\\bin\\git.exe'
-                    def gitUrl = 'https://github.com/MNMenendez/QTMP_VCU.git'
                     bat """
-                    "%gitExecutable%" clone "%gitUrl%"
+                    set PATH=%GIT_HOME%;%PATH%
+                    git clone https://github.com/MNMenendez/QTMP_VCU.git
                     """
                 }
             }
@@ -60,7 +60,4 @@ pipeline {
             echo 'Tests passed successfully!'
         }
         failure {
-            echo 'Tests failed. Please check the logs.'
-        }
-    }
-}
+            echo 'Tests fa
