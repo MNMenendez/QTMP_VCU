@@ -36,7 +36,7 @@ pipeline {
                 script {
                     // Run the simulation and check the results
                     bat """
-                    %MODELSIM_HOME%\\bin\\vsim -c -do "run -all; quit"
+                    %MODELSIM_HOME%\\vsim -c -do "run -all; quit"
                     """
                 }
             }
