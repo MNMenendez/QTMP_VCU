@@ -44,7 +44,6 @@ pipeline {
             }
         }
 
-        stages {
         stage('Compile VHDL') {
             steps {
                 script {
@@ -52,8 +51,8 @@ pipeline {
                     def vsimExe = "${env.MODELSIM_HOME}/vsim.exe"
                     def command = "\"${vsimExe}\" -c -do \"vlib work; vcom -2008 -work work source/*.vhdl; vcom -2008 -work work testbenches/*.vhdl\""
                     
-                    // Run the command
-                    bat(script: command, returnStatus: true)
+                    // Run the command in the correct working directory
+                    bat(script: "cd /d %WORKSPACE%\\QTMP_VCU && ${command}", returnStatus: true)
                 }
             }
         }
