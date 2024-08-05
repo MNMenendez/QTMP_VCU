@@ -60,10 +60,11 @@ pipeline {
         stage('Run Simulation') {
             steps {
                 script {
+                    def vsimExe = "${env.MODELSIM_HOME}/vsim.exe"
                     bat """
                     echo Running simulation...
                     cd /d "%WORKSPACE%\\QTMP_VCU"
-                    "%MODELSIM_HOME%\\vsim.exe" -c -do "run -all; quit"
+                    "%vsimExe%" -c -do "vlib work; vcom -2008 -work work source/*.vhdl; vcom -2008 -work work testbenches/*.vhdl; vsim work.your_top_level_entity; run -all; quit"
                     """
                 }
             }
