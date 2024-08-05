@@ -72,7 +72,7 @@ pipeline {
 
         stage('Archive Results') {
             steps {
-                archiveArtifacts artifacts: 'test_results.log', allowEmptyArchive: true
+                archiveArtifacts artifacts: 'QTMP_VCU/test_results.log', allowEmptyArchive: true
             }
         }
     }
