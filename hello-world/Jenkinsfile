@@ -5,7 +5,8 @@ pipeline {
         stage('Checkout') {
             steps {
                 // Checkout the code from your repository
-                git 'https://github.com/MNMenendez/QTMP_VCU.git'
+               //git 'https://github.com/MNMenendez/QTMP_VCU.git'
+                echo 'Run the static analysis to the code' 
             }
         }
 
