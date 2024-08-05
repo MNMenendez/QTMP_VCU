@@ -15,7 +15,7 @@ pipeline {
                 // Setup the environment; ensure ModelSim is installed
                 script {
                     // Set environment variables if needed
-                    env.MODELSIM_HOME = '/path/to/modelsim'
+                    env.MODELSIM_HOME = 'C:\modeltech64_10.6d\win64\'
                 }
             }
         }
@@ -25,7 +25,7 @@ pipeline {
                 script {
                     // Run ModelSim's `vlib` and `vcom` commands to compile VHDL code
                     bat """
-                    %MODELSIM_HOME%\\bin\\vsim -c -do "vlib work; vcom -2008 and_gate.vhdl and_gate_tb.vhdl"
+                    %MODELSIM_HOME%\\vsim -c -do "vlib work; vcom -2008 and_gate.vhdl and_gate_tb.vhdl"
                     """
                 }
             }
