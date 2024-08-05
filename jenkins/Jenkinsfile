@@ -4,6 +4,7 @@ pipeline {
     environment {
         MODELSIM_HOME = 'C:\\modeltech64_10.6d\\win64'
         GIT_PATH = 'C:\\Users\\martin\\AppData\\Local\\Programs\\Git\\bin\\git.exe'
+        TOP_LEVEL_ENTITY = 'and_gate' // Updated to your top-level entity name
     }
 
     stages {
@@ -49,10 +50,10 @@ pipeline {
                 script {
                     // Define the ModelSim executable path and commands
                     def vsimExe = "${env.MODELSIM_HOME}/vsim.exe"
-                    def command = "\"${vsimExe}\" -c -do \"vlib work; vcom -2008 -work work source/*.vhdl; vcom -2008 -work work testbenches/*.vhdl\""
+                    def compileCommand = "\"${vsimExe}\" -c -do \"vlib work; vcom -2008 -work work source/*.vhdl; vcom -2008 -work work testbenches/*.vhdl\""
                     
-                    // Run the command in the correct working directory
-                    bat(script: "cd /d %WORKSPACE%\\QTMP_VCU && ${command}", returnStatus: true)
+                    // Run the compilation command in the correct working directory
+                    bat(script: "cd /d %WORKSPACE%\\QTMP_VCU && ${compileCommand}", returnStatus: true)
                 }
             }
         }
@@ -61,10 +62,10 @@ pipeline {
             steps {
                 script {
                     def vsimExe = "${env.MODELSIM_HOME}/vsim.exe"
-                    def command = "\"${vsimExe}\" -c -do \"vlib work; vcom -2008 -work work source/*.vhdl; vcom -2008 -work work testbenches/*.vhdl; vsim work.your_top_level_entity; run -all; quit\""
+                    def simulationCommand = "\"${vsimExe}\" -c -do \"vsim work.${env.TOP_LEVEL_ENTITY}; run -all; quit\""
                     
-                    // Run the simulation command
-                    bat(script: "cd /d %WORKSPACE%\\QTMP_VCU && ${command}", returnStatus: true)
+                    // Run the simulation command in the correct working directory
+                    bat(script: "cd /d %WORKSPACE%\\QTMP_VCU && ${simulationCommand}", returnStatus: true)
                 }
             }
         }
