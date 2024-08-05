@@ -44,18 +44,17 @@ pipeline {
             }
         }
 
+        stages {
         stage('Compile') {
             steps {
-                script {
-                    bat """
-                    echo Changing to working directory...
-                    cd /d "%WORKSPACE%\\QTMP_VCU"
-                    echo Running ModelSim...
-                    "%MODELSIM_HOME%\\vsim.exe" -c -do "vlib work; vcom -2008 -work work \\"%WORKSPACE%\\QTMP_VCU\\source\\*.vhdl\\"; vcom -2008 -work work \\"%WORKSPACE%\\QTMP_VCU\\testbenches\\*.vhdl\\""
-                    """
-                }
+                bat """
+                cd /d "%WORKSPACE%\\QTMP_VCU"
+                echo Compiling VHDL files...
+                "%MODELSIM_HOME%\\vsim.exe" -c -do "vlib work; vcom -2008 -work work source/*.vhdl; vcom -2008 -work work testbenches/*.vhdl"
+                """
             }
         }
+    }
 
         stage('Run Simulation') {
             steps {
