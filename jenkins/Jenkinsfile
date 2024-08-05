@@ -5,6 +5,7 @@ pipeline {
         MODELSIM_HOME = 'C:\\modeltech64_10.6d\\win64'
         GIT_PATH = 'C:\\Users\\martin\\AppData\\Local\\Programs\\Git\\bin\\git.exe'
         TOP_LEVEL_ENTITY = 'and_gate'
+        TEST_RESULTS_XML = 'test_results.xml'  // This should be the converted JUnit XML file
     }
 
     stages {
@@ -56,8 +57,11 @@ pipeline {
             steps {
                 script {
                     def vsimExe = "${env.MODELSIM_HOME}/vsim.exe"
-                    def simulationCommand = "\"${vsimExe}\" -c -do \"vsim work.${env.TOP_LEVEL_ENTITY}; run -all; quit\" > test_results.log"
+                    def simulationCommand = "\"${vsimExe}\" -c -do \"vsim work.${env.TOP_LEVEL_ENTITY}; run -all; quit\" > simulation.log"
                     bat(script: "cd /d %WORKSPACE%\\QTMP_VCU && ${simulationCommand}", returnStatus: true)
+
+                    // Convert simulation results to JUnit XML (custom script needed here)
+                    bat "python convert_to_junit_xml.py simulation.log ${env.TEST_RESULTS_XML}"
                 }
             }
         }
@@ -72,7 +76,13 @@ pipeline {
 
         stage('Archive Results') {
             steps {
-                archiveArtifacts artifacts: 'QTMP_VCU/test_results.log', allowEmptyArchive: true
+                archiveArtifacts artifacts: 'QTMP_VCU/test_results.xml', allowEmptyArchive: true
+            }
+        }
+
+        stage('Publish Test Results') {
+            steps {
+                publishTestResults testResults: [[reportFiles: 'QTMP_VCU/test_results.xml']]
             }
         }
     }
