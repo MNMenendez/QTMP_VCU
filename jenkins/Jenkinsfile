@@ -7,7 +7,7 @@ pipeline {
         TOP_LEVEL_ENTITY = 'hcmt_cpld_top'
         TEST_RESULTS_XML = 'test_results.xml'
         CONVERT_SCRIPT = 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\convert_to_junit_xml.py'
-        COMPILE_SCRIPT = 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\compile_vhdl.bat'
+        COMPILE_SCRIPT = 'C:\\ProgramData\\Jenkins\\ART_QTMP\\compile_vhdl.bat'
     }
 
     stages {
@@ -50,8 +50,8 @@ pipeline {
                 script {
                     echo "Verifying files in workspace..."
                     bat 'dir'
-                    bat "dir \"C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\source\""
-                    bat "dir \"C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\testbenches\""
+                    bat "dir \"C:\\ProgramData\\Jenkins\\ART_QTMP\\source\""
+                    bat "dir \"C:\\ProgramData\\Jenkins\\ART_QTMP\\testbenches\""
                 }
             }
         }
@@ -68,9 +68,8 @@ pipeline {
             steps {
                 script {
                     echo "Running VHDL compilation..."
-                    // Update COMPILE_SCRIPT path to be relative to the Jenkinsfile
-                    def compileScriptPath = "${env.WORKSPACE}/../compile_vhdl.bat"
-                    bat(script: "cd ${env.WORKSPACE}\\.. && ${compileScriptPath}", returnStatus: true, returnStdout: true).eachLine { line -> echo line }
+                    def compileCommand = "\"${env.COMPILE_SCRIPT}\""
+                    bat(script: "${compileCommand}", returnStatus: true, returnStdout: true).eachLine { line -> echo line }
                 }
             }
         }
