@@ -50,8 +50,8 @@ pipeline {
                 script {
                     echo "Verifying files in workspace..."
                     bat 'dir'
-                    bat "dir \"${env.SOURCE_DIR}\""
-                    bat "dir \"${env.TESTBENCHES_DIR}\""
+                    bat "dir \"C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\source\""
+                    bat "dir \"C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\testbenches\""
                 }
             }
         }
@@ -68,7 +68,9 @@ pipeline {
             steps {
                 script {
                     echo "Running VHDL compilation..."
-                    bat(script: "${env.COMPILE_SCRIPT}", returnStatus: true, returnStdout: true).eachLine { line -> echo line }
+                    // Update COMPILE_SCRIPT path to be relative to the Jenkinsfile
+                    def compileScriptPath = "${env.WORKSPACE}/../compile_vhdl.bat"
+                    bat(script: "cd ${env.WORKSPACE}\\.. && ${compileScriptPath}", returnStatus: true, returnStdout: true).eachLine { line -> echo line }
                 }
             }
         }
