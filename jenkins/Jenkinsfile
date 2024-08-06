@@ -69,6 +69,11 @@ pipeline {
                 script {
                     echo "Running VHDL compilation using batch file..."
                     def compileCommand = "\"${env.COMPILE_SCRIPT}\""
+                    
+                    // Verify that the batch file exists
+                    bat(script: "if exist \"${env.COMPILE_SCRIPT}\" (echo Found) else (echo Not found)", returnStatus: true)
+                    
+                    // Run the batch file
                     bat(script: "${compileCommand}", returnStatus: true, returnStdout: true).eachLine { line ->
                         echo "Output: ${line}"
                     }
