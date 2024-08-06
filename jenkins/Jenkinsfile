@@ -67,9 +67,11 @@ pipeline {
         stage('Compile VHDL') {
             steps {
                 script {
-                    echo "Running VHDL compilation..."
+                    echo "Running VHDL compilation using batch file..."
                     def compileCommand = "\"${env.COMPILE_SCRIPT}\""
-                    bat(script: "${compileCommand}", returnStatus: true, returnStdout: true).eachLine { line -> echo line }
+                    bat(script: "${compileCommand}", returnStatus: true, returnStdout: true).eachLine { line ->
+                        echo "Output: ${line}"
+                    }
                 }
             }
         }
@@ -101,7 +103,6 @@ pipeline {
 
         stage('Publish Test Results') {
             steps {
-                // Publish test results
                 junit '**/${env.TEST_RESULTS_XML}'
             }
         }
