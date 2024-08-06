@@ -13,7 +13,7 @@ pipeline {
         stage('Cleanup') {
             steps {
                 script {
-                    // Ensure ART_QTMP directory is clean
+                    // Remove existing ART_QTMP directory if it exists
                     bat 'if exist "%WORKSPACE%\\ART_QTMP" rd /s /q "%WORKSPACE%\\ART_QTMP"'
                 }
             }
