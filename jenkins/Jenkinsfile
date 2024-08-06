@@ -13,7 +13,6 @@ pipeline {
         stage('Cleanup') {
             steps {
                 script {
-                    // Attempt to remove existing files and directories
                     echo "Cleaning up workspace..."
                     bat '''
                     echo Deleting old files...
@@ -28,16 +27,17 @@ pipeline {
         stage('Initialize') {
             steps {
                 script {
-                    // Initialize Git repository if not already initialized
+                    echo "Initializing repository..."
                     bat '''
                     if not exist ".git" (
                         echo Repository not initialized. Cloning repository...
                         "%GIT_PATH%" clone https://github.com/MNMenendez/QTMP_VCU.git .
                     ) else (
-                        echo Repository already initialized. Pulling latest changes...
+                        echo Repository already initialized. Checking out branch and pulling latest changes...
+                        "%GIT_PATH%" checkout main || echo "Branch not found, creating main branch" && "%GIT_PATH%" checkout -b main
                         "%GIT_PATH%" fetch --all
                         "%GIT_PATH%" reset --hard origin/main
-                        "%GIT_PATH%" pull
+                        "%GIT_PATH%" pull origin main
                     )
                     '''
                 }
@@ -47,7 +47,7 @@ pipeline {
         stage('Verify Files') {
             steps {
                 script {
-                    // List files to verify the directory structure
+                    echo "Verifying files in workspace..."
                     bat 'dir'
                 }
             }
