@@ -18,6 +18,17 @@ if exist "%MODELSIM_HOME%\vsim.exe" (
     exit /b 1
 )
 
+rem Check if transcript file can be created
+echo Testing file creation in current directory...
+echo Test > test_file.txt
+if exist "test_file.txt" (
+    echo Test file created successfully.
+    del test_file.txt
+) else (
+    echo Unable to create test file.
+    exit /b 1
+)
+
 rem Run ModelSim commands
 "%MODELSIM_HOME%\vsim.exe" -c -do "vlib work; vcom -2008 -work work \"C:\ProgramData\Jenkins\.jenkins\workspace\ART_QTMP\source\*.vhdl\"; vcom -2008 -work work \"C:\ProgramData\Jenkins\.jenkins\workspace\ART_QTMP\testbenches\*.vhdl\""
 
