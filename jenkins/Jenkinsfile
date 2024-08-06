@@ -91,7 +91,7 @@ pipeline {
                         if (file.trim()) {
                             echo "Compiling source file: ${file}"
                             def formattedPath = file.replace('\\', '\\\\')
-                            def compileCommand = "\"${env.MODELSIM_HOME}\\vsim.exe\" -c -do \"vlib work; vcom -2008 -work work \\\"${formattedPath}\\\"\""
+                            def compileCommand = """cmd /c "${env.MODELSIM_HOME}\\vsim.exe" -c -do "vlib work; vcom -2008 -work work \\"${formattedPath}\\"" """
                             echo "Running command: ${compileCommand}"
                             def result = bat(script: compileCommand, returnStatus: true, returnStdout: true).trim()
                             echo "Compilation output:\n${result}"
@@ -121,7 +121,7 @@ pipeline {
                         if (file.trim()) {
                             echo "Compiling testbench file: ${file}"
                             def formattedPath = file.replace('\\', '\\\\')
-                            def compileCommand = "\"${env.MODELSIM_HOME}\\vsim.exe\" -c -do \"vcom -2008 -work work \\\"${formattedPath}\\\"\""
+                            def compileCommand = """cmd /c "${env.MODELSIM_HOME}\\vsim.exe" -c -do "vcom -2008 -work work \\"${formattedPath}\\"" """
                             echo "Running command: ${compileCommand}"
                             def result = bat(script: compileCommand, returnStatus: true, returnStdout: true).trim()
                             echo "Compilation output:\n${result}"
