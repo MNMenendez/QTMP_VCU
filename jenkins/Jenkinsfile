@@ -73,7 +73,7 @@ pipeline {
 
                     // List and debug source files
                     def sourceFiles = powershell(script: """
-                        Get-ChildItem -Path '${sourceDir}' -Filter '*.vhdl' | 
+                        Get-ChildItem -Path '${sourceDir}' -Filter '*.VHD' -Recurse | 
                         Select-Object -ExpandProperty FullName
                     """, returnStdout: true).trim()
 
@@ -102,7 +102,7 @@ pipeline {
 
                     // List and debug testbench files
                     def testbenchFiles = powershell(script: """
-                        Get-ChildItem -Path '${testbenchesDir}' -Filter '*.vhdl' | 
+                        Get-ChildItem -Path '${testbenchesDir}' -Filter '*.VHD' -Recurse | 
                         Select-Object -ExpandProperty FullName
                     """, returnStdout: true).trim()
 
