@@ -71,16 +71,23 @@ pipeline {
 
                     echo "Running VHDL compilation..."
 
-                    // Get all source files
+                    // List and debug source files
                     def sourceFiles = powershell(script: """
                         Get-ChildItem -Path '${sourceDir}' -Filter '*.vhdl' | 
                         Select-Object -ExpandProperty FullName
                     """, returnStdout: true).trim().split('\r?\n')
 
+                    echo "Source files found:"
+                    sourceFiles.each { file ->
+                        echo " - ${file}"
+                    }
+
                     if (sourceFiles) {
                         sourceFiles.each { file ->
                             echo "Compiling source file: ${file}"
-                            def result = bat(script: "\"${env.MODELSIM_HOME}\\vsim.exe\" -c -do \"vlib work; vcom -2008 -work work \\\"${file}\\\"\"", returnStatus: true, returnStdout: true).trim()
+                            def compileCommand = "\"${env.MODELSIM_HOME}\\vsim.exe\" -c -do \"vlib work; vcom -2008 -work work \\\"${file}\\\"\""
+                            echo "Running command: ${compileCommand}"
+                            def result = bat(script: compileCommand, returnStatus: true, returnStdout: true).trim()
                             echo "Compilation output:\n${result}"
                             if (result.contains("Error")) {
                                 error "Compilation of source file ${file} failed"
@@ -90,16 +97,23 @@ pipeline {
                         echo "No source files found in ${sourceDir}"
                     }
 
-                    // Get all testbench files
+                    // List and debug testbench files
                     def testbenchFiles = powershell(script: """
                         Get-ChildItem -Path '${testbenchesDir}' -Filter '*.vhdl' | 
                         Select-Object -ExpandProperty FullName
                     """, returnStdout: true).trim().split('\r?\n')
 
+                    echo "Testbench files found:"
+                    testbenchFiles.each { file ->
+                        echo " - ${file}"
+                    }
+
                     if (testbenchFiles) {
                         testbenchFiles.each { file ->
                             echo "Compiling testbench file: ${file}"
-                            def result = bat(script: "\"${env.MODELSIM_HOME}\\vsim.exe\" -c -do \"vcom -2008 -work work \\\"${file}\\\"\"", returnStatus: true, returnStdout: true).trim()
+                            def compileCommand = "\"${env.MODELSIM_HOME}\\vsim.exe\" -c -do \"vcom -2008 -work work \\\"${file}\\\"\""
+                            echo "Running command: ${compileCommand}"
+                            def result = bat(script: compileCommand, returnStatus: true, returnStdout: true).trim()
                             echo "Compilation output:\n${result}"
                             if (result.contains("Error")) {
                                 error "Compilation of testbench file ${file} failed"
