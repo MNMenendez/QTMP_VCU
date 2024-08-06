@@ -69,7 +69,7 @@ pipeline {
             steps {
                 script {
                     def vsimExe = "${env.MODELSIM_HOME}/vsim.exe"
-                    def compileCommand = "\"${vsimExe}\" -c -do \"vlib work; vcom -2008 -work work ${env.SOURCE_DIR}\\*.vhdl; vcom -2008 -work work ${env.TESTBENCHES_DIR}\\*.vhdl\""
+                    def compileCommand = "\"${vsimExe}\" -c -do \"vlib work; vcom -2008 -work work \\\"${env.SOURCE_DIR}\\*.vhdl\\\"; vcom -2008 -work work \\\"${env.TESTBENCHES_DIR}\\*.vhdl\\\"\""
                     bat(script: "${compileCommand}", returnStatus: true)
                 }
             }
