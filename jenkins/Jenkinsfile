@@ -73,26 +73,44 @@ pipeline {
 
                     // Compile all source files
                     echo "Compiling source files..."
-                    def sourceFiles = powershell(script: "Get-ChildItem -Path '${sourceDir}' -Filter '*.vhdl' | Select-Object -ExpandProperty FullName", returnStdout: true).trim().split('\r?\n')
-                    sourceFiles.each { file ->
-                        echo "Compiling source file: ${file}"
-                        def result = bat(script: "\"${env.MODELSIM_HOME}\\vsim.exe\" -c -do \"vlib work; vcom -2008 -work work \\\"${file}\\\"\"", returnStatus: true, returnStdout: true).trim()
-                        echo "Compilation output:\n${result}"
-                        if (result.contains("Error")) {
-                            error "Compilation of source file ${file} failed"
+                    def sourceFiles = powershell(script: """
+                        Get-ChildItem -Path '${sourceDir}' -Filter '*.vhdl' | 
+                        Select-Object -ExpandProperty FullName | 
+                        ForEach-Object { Write-Output $_ }
+                    """, returnStdout: true).trim()
+                    
+                    if (sourceFiles) {
+                        sourceFiles.split('\r?\n').each { file ->
+                            echo "Compiling source file: ${file}"
+                            def result = bat(script: "\"${env.MODELSIM_HOME}\\vsim.exe\" -c -do \"vlib work; vcom -2008 -work work \\\"${file}\\\"\"", returnStatus: true, returnStdout: true).trim()
+                            echo "Compilation output:\n${result}"
+                            if (result.contains("Error")) {
+                                error "Compilation of source file ${file} failed"
+                            }
                         }
+                    } else {
+                        echo "No source files found in ${sourceDir}"
                     }
 
                     // Compile all testbench files
                     echo "Compiling testbench files..."
-                    def testbenchesFiles = powershell(script: "Get-ChildItem -Path '${testbenchesDir}' -Filter '*.vhdl' | Select-Object -ExpandProperty FullName", returnStdout: true).trim().split('\r?\n')
-                    testbenchesFiles.each { file ->
-                        echo "Compiling testbench file: ${file}"
-                        def result = bat(script: "\"${env.MODELSIM_HOME}\\vsim.exe\" -c -do \"vcom -2008 -work work \\\"${file}\\\"\"", returnStatus: true, returnStdout: true).trim()
-                        echo "Compilation output:\n${result}"
-                        if (result.contains("Error")) {
-                            error "Compilation of testbench file ${file} failed"
+                    def testbenchesFiles = powershell(script: """
+                        Get-ChildItem -Path '${testbenchesDir}' -Filter '*.vhdl' | 
+                        Select-Object -ExpandProperty FullName | 
+                        ForEach-Object { Write-Output $_ }
+                    """, returnStdout: true).trim()
+
+                    if (testbenchesFiles) {
+                        testbenchesFiles.split('\r?\n').each { file ->
+                            echo "Compiling testbench file: ${file}"
+                            def result = bat(script: "\"${env.MODELSIM_HOME}\\vsim.exe\" -c -do \"vcom -2008 -work work \\\"${file}\\\"\"", returnStatus: true, returnStdout: true).trim()
+                            echo "Compilation output:\n${result}"
+                            if (result.contains("Error")) {
+                                error "Compilation of testbench file ${file} failed"
+                            }
                         }
+                    } else {
+                        echo "No testbench files found in ${testbenchesDir}"
                     }
                 }
             }
