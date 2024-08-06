@@ -76,7 +76,8 @@ pipeline {
                     vcom -2008 -work work \\"${env.TESTBENCHES_DIR}\\*.vhdl\\"
                     "
                     """
-                    bat(script: "${compileCommand}", returnStatus: true)
+                    echo "Running compile command: ${compileCommand}"
+                    bat(script: "${compileCommand}", returnStatus: true, returnStdout: true).eachLine { line -> echo line }
                 }
             }
         }
@@ -94,6 +95,7 @@ pipeline {
                     """
                     
                     // Run the simulation and redirect output to simulation.log
+                    echo "Running simulation command: ${simulationCommand}"
                     bat(script: "${simulationCommand} > simulation.log", returnStatus: true)
                     
                     // Verify if simulation.log is created and list its contents
