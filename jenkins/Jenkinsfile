@@ -98,7 +98,8 @@ pipeline {
 
         stage('Publish Test Results') {
             steps {
-                publishTestResults testResults: [[reportFiles: 'test_results.xml']]
+                // Publish test results
+                junit '**/test_results.xml'
             }
         }
     }
