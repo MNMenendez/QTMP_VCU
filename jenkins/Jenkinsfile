@@ -7,6 +7,8 @@ pipeline {
         TOP_LEVEL_ENTITY = 'hcmt_cpld_top'
         TEST_RESULTS_XML = 'test_results.xml'  // JUnit XML file
         CONVERT_SCRIPT = 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\convert_to_junit_xml.py'
+        SOURCE_DIR = 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\source'
+        TESTBENCHES_DIR = 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\testbenches'
     }
 
     stages {
@@ -49,6 +51,8 @@ pipeline {
                 script {
                     echo "Verifying files in workspace..."
                     bat 'dir'
+                    bat "dir ${env.SOURCE_DIR}"
+                    bat "dir ${env.TESTBENCHES_DIR}"
                 }
             }
         }
@@ -65,7 +69,7 @@ pipeline {
             steps {
                 script {
                     def vsimExe = "${env.MODELSIM_HOME}/vsim.exe"
-                    def compileCommand = "\"${vsimExe}\" -c -do \"vlib work; vcom -2008 -work work source/*.vhdl; vcom -2008 -work work testbenches/*.vhdl\""
+                    def compileCommand = "\"${vsimExe}\" -c -do \"vlib work; vcom -2008 -work work ${env.SOURCE_DIR}\\*.vhdl; vcom -2008 -work work ${env.TESTBENCHES_DIR}\\*.vhdl\""
                     bat(script: "${compileCommand}", returnStatus: true)
                 }
             }
