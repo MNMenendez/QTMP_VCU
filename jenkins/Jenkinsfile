@@ -13,7 +13,8 @@ pipeline {
         stage('Cleanup') {
             steps {
                 script {
-                    bat 'if exist "%WORKSPACE%\\QTMP_VCU" rd /s /q "%WORKSPACE%\\QTMP_VCU"'
+                    // Ensure ART_QTMP directory is clean
+                    bat 'if exist "%WORKSPACE%\\ART_QTMP" rd /s /q "%WORKSPACE%\\ART_QTMP"'
                 }
             }
         }
@@ -21,6 +22,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 script {
+                    // Clone the repository directly into ART_QTMP
                     bat """
                     "%GIT_PATH%" clone https://github.com/MNMenendez/QTMP_VCU.git ART_QTMP
                     """
@@ -31,6 +33,7 @@ pipeline {
         stage('Verify Files') {
             steps {
                 script {
+                    // List files to verify presence
                     bat "dir %WORKSPACE%\\ART_QTMP"
                 }
             }
@@ -70,6 +73,7 @@ pipeline {
         stage('List Workspace Files') {
             steps {
                 script {
+                    // Ensure files are in the expected locations
                     bat 'dir %WORKSPACE%\\ART_QTMP'
                 }
             }
