@@ -1,22 +1,23 @@
 @echo off
-setlocal
+echo Running VHDL compilation...
 
-:: Define paths
+rem Set paths
 set MODELSIM_HOME=C:\modeltech64_10.6d\win64
-set SOURCE_DIR=C:\ProgramData\Jenkins\.jenkins\workspace\ART_QTMP\source
-set TESTBENCHES_DIR=C:\ProgramData\Jenkins\.jenkins\workspace\ART_QTMP\testbenches
 
-:: Create work library
-"%MODELSIM_HOME%\vsim.exe" -c -do "vlib work"
+rem Print environment variables for debugging
+echo MODELSIM_HOME=%MODELSIM_HOME%
 
-:: Compile source files
-for %%f in ("%SOURCE_DIR%\*.vhdl") do (
-    "%MODELSIM_HOME%\vsim.exe" -c -do "vcom -2008 -work work \"%%f\""
+rem Print current directory
+echo Current Directory: %CD%
+
+rem Run ModelSim commands
+"%MODELSIM_HOME%\vsim.exe" -c -do "vlib work; vcom -2008 -work work \"C:\ProgramData\Jenkins\.jenkins\workspace\ART_QTMP\source\*.vhdl\"; vcom -2008 -work work \"C:\ProgramData\Jenkins\.jenkins\workspace\ART_QTMP\testbenches\*.vhdl\""
+
+rem Check the error level
+if %errorlevel% neq 0 (
+    echo Compilation failed with error level %errorlevel%
+) else (
+    echo Compilation succeeded
 )
 
-:: Compile testbenches
-for %%f in ("%TESTBENCHES_DIR%\*.vhdl") do (
-    "%MODELSIM_HOME%\vsim.exe" -c -do "vcom -2008 -work work \"%%f\""
-)
-
-endlocal
+pause
