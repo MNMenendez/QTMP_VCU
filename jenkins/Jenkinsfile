@@ -13,8 +13,14 @@ pipeline {
         stage('Cleanup') {
             steps {
                 script {
-                    // Remove all files and folders in the workspace
-                    bat 'if exist "%WORKSPACE%" rd /s /q "%WORKSPACE%"'
+                    // Attempt to remove existing files and directories
+                    echo "Cleaning up workspace..."
+                    bat '''
+                    echo Deleting old files...
+                    del /q %WORKSPACE%\\*.*
+                    echo Deleting old directories...
+                    for /d %%p in (%WORKSPACE%\\*) do rd /s /q "%%p"
+                    '''
                 }
             }
         }
