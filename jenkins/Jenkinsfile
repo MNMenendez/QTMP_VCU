@@ -7,7 +7,6 @@ pipeline {
         TOP_LEVEL_ENTITY = 'hcmt_cpld_top'
         TEST_RESULTS_XML = 'test_results.xml'
         CONVERT_SCRIPT = 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\convert_to_junit_xml.py'
-        COMPILE_SCRIPT = 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\compile_vhdl.bat'
     }
 
     stages {
@@ -67,17 +66,33 @@ pipeline {
         stage('Compile VHDL') {
             steps {
                 script {
-                    echo "Running VHDL compilation using batch file..."
-                    def compileCommand = "\"${env.COMPILE_SCRIPT}\""
-                    
-                    // Run the batch file and capture output
-                    def result = bat(script: "${compileCommand}", returnStatus: true, returnStdout: true).trim()
-                    
-                    echo "Batch file output:\n${result}"
-                    
-                    // Check for errors in the result
-                    if (result.contains("Compilation failed")) {
-                        error "VHDL compilation failed"
+                    def sourceDir = 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\source'
+                    def testbenchesDir = 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\testbenches'
+
+                    echo "Running VHDL compilation..."
+
+                    // Compile all source files
+                    def sourceFiles = bat(script: "dir /b /a-d \"${sourceDir}\\*.vhdl\"", returnStdout: true).trim().split('\r?\n')
+                    sourceFiles.each { file ->
+                        def filePath = "${sourceDir}\\${file}"
+                        echo "Compiling source file: ${filePath}"
+                        def result = bat(script: "\"${env.MODELSIM_HOME}\\vsim.exe\" -c -do \"vlib work; vcom -2008 -work work \\\"${filePath}\\\"\"", returnStatus: true, returnStdout: true).trim()
+                        echo "Compilation output:\n${result}"
+                        if (result.contains("Error")) {
+                            error "Compilation of source file ${filePath} failed"
+                        }
+                    }
+
+                    // Compile all testbench files
+                    def testbenchesFiles = bat(script: "dir /b /a-d \"${testbenchesDir}\\*.vhdl\"", returnStdout: true).trim().split('\r?\n')
+                    testbenchesFiles.each { file ->
+                        def filePath = "${testbenchesDir}\\${file}"
+                        echo "Compiling testbench file: ${filePath}"
+                        def result = bat(script: "\"${env.MODELSIM_HOME}\\vsim.exe\" -c -do \"vcom -2008 -work work \\\"${filePath}\\\"\"", returnStatus: true, returnStdout: true).trim()
+                        echo "Compilation output:\n${result}"
+                        if (result.contains("Error")) {
+                            error "Compilation of testbench file ${filePath} failed"
+                        }
                     }
                 }
             }
