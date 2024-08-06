@@ -14,7 +14,7 @@ pipeline {
             steps {
                 script {
                     // Remove the existing ART_QTMP directory if it exists
-                    bat 'if exist "%WORKSPACE%\\ART_QTMP" rd /s /q "%WORKSPACE%\\ART_QTMP"'
+                    bat 'if exist "%WORKSPACE%" rd /s /q "%WORKSPACE%"'
                 }
             }
         }
@@ -22,11 +22,9 @@ pipeline {
         stage('Checkout') {
             steps {
                 script {
-                    // Clone the repository directly into the ART_QTMP directory
+                    // Clone the repository directly into the workspace (ART_QTMP)
                     bat """
-                    cd /d %WORKSPACE%
-                    if not exist ART_QTMP mkdir ART_QTMP
-                    "%GIT_PATH%" clone https://github.com/MNMenendez/QTMP_VCU.git ART_QTMP
+                    "%GIT_PATH%" clone https://github.com/MNMenendez/QTMP_VCU.git .
                     """
                 }
             }
@@ -36,7 +34,7 @@ pipeline {
             steps {
                 script {
                     // List files to verify the directory structure
-                    bat "dir %WORKSPACE%\\ART_QTMP"
+                    bat 'dir'
                 }
             }
         }
@@ -54,7 +52,7 @@ pipeline {
                 script {
                     def vsimExe = "${env.MODELSIM_HOME}/vsim.exe"
                     def compileCommand = "\"${vsimExe}\" -c -do \"vlib work; vcom -2008 -work work source/*.vhdl; vcom -2008 -work work testbenches/*.vhdl\""
-                    bat(script: "cd /d %WORKSPACE%\\ART_QTMP && ${compileCommand}", returnStatus: true)
+                    bat(script: "${compileCommand}", returnStatus: true)
                 }
             }
         }
@@ -66,40 +64,18 @@ pipeline {
                     def simulationCommand = "\"${vsimExe}\" -c -do \"vsim work.${env.TOP_LEVEL_ENTITY}; run -all; quit\""
                     
                     // Run the simulation and redirect output to simulation.log
-                    bat(script: "cd /d %WORKSPACE%\\ART_QTMP && ${simulationCommand} > simulation.log", returnStatus: true)
+                    bat(script: "${simulationCommand} > simulation.log", returnStatus: true)
                     
                     // Verify if simulation.log is created and list its contents
-                    bat 'dir %WORKSPACE%\\ART_QTMP\\simulation.log'
-                    bat 'type %WORKSPACE%\\ART_QTMP\\simulation.log'
+                    bat 'dir simulation.log'
+                    bat 'type simulation.log'
                     
                     // Convert simulation results to JUnit XML
-                    bat "python ${env.CONVERT_SCRIPT} %WORKSPACE%\\ART_QTMP\\simulation.log %WORKSPACE%\\ART_QTMP\\${env.TEST_RESULTS_XML}"
+                    bat "python ${env.CONVERT_SCRIPT} simulation.log ${env.TEST_RESULTS_XML}"
                 }
             }
         }
 
         stage('Archive Results') {
             steps {
-                archiveArtifacts artifacts: 'ART_QTMP/test_results.xml', allowEmptyArchive: true
-            }
-        }
-
-        stage('Publish Test Results') {
-            steps {
-                publishTestResults testResults: [[reportFiles: 'ART_QTMP/test_results.xml']]
-            }
-        }
-    }
-
-    post {
-        always {
-            echo 'Cleaning up...'
-        }
-        success {
-            echo 'Tests passed successfully!'
-        }
-        failure {
-            echo 'Tests failed. Please check the logs.'
-        }
-    }
-}
+                archiveArtifacts artifacts: 'te
