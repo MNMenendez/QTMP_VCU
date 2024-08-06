@@ -10,6 +10,14 @@ echo MODELSIM_HOME=%MODELSIM_HOME%
 rem Print current directory
 echo Current Directory: %CD%
 
+rem Check if ModelSim executable is accessible
+if exist "%MODELSIM_HOME%\vsim.exe" (
+    echo ModelSim executable found.
+) else (
+    echo ModelSim executable not found.
+    exit /b 1
+)
+
 rem Run ModelSim commands
 "%MODELSIM_HOME%\vsim.exe" -c -do "vlib work; vcom -2008 -work work \"C:\ProgramData\Jenkins\.jenkins\workspace\ART_QTMP\source\*.vhdl\"; vcom -2008 -work work \"C:\ProgramData\Jenkins\.jenkins\workspace\ART_QTMP\testbenches\*.vhdl\""
 
