@@ -78,12 +78,17 @@ pipeline {
                     """, returnStdout: true).trim().split('\r?\n')
 
                     echo "Source files found:"
-                    sourceFiles.each { file ->
-                        echo " - ${file}"
-                    }
-
                     if (sourceFiles) {
                         sourceFiles.each { file ->
+                            echo " - ${file}"
+                        }
+                    } else {
+                        echo "No source files found in ${sourceDir}"
+                    }
+
+                    // Compile each source file
+                    sourceFiles.each { file ->
+                        if (file.trim()) {
                             echo "Compiling source file: ${file}"
                             def compileCommand = "\"${env.MODELSIM_HOME}\\vsim.exe\" -c -do \"vlib work; vcom -2008 -work work \\\"${file}\\\"\""
                             echo "Running command: ${compileCommand}"
@@ -93,8 +98,6 @@ pipeline {
                                 error "Compilation of source file ${file} failed"
                             }
                         }
-                    } else {
-                        echo "No source files found in ${sourceDir}"
                     }
 
                     // List and debug testbench files
@@ -104,12 +107,17 @@ pipeline {
                     """, returnStdout: true).trim().split('\r?\n')
 
                     echo "Testbench files found:"
-                    testbenchFiles.each { file ->
-                        echo " - ${file}"
-                    }
-
                     if (testbenchFiles) {
                         testbenchFiles.each { file ->
+                            echo " - ${file}"
+                        }
+                    } else {
+                        echo "No testbench files found in ${testbenchesDir}"
+                    }
+
+                    // Compile each testbench file
+                    testbenchFiles.each { file ->
+                        if (file.trim()) {
                             echo "Compiling testbench file: ${file}"
                             def compileCommand = "\"${env.MODELSIM_HOME}\\vsim.exe\" -c -do \"vcom -2008 -work work \\\"${file}\\\"\""
                             echo "Running command: ${compileCommand}"
@@ -119,8 +127,6 @@ pipeline {
                                 error "Compilation of testbench file ${file} failed"
                             }
                         }
-                    } else {
-                        echo "No testbench files found in ${testbenchesDir}"
                     }
                 }
             }
