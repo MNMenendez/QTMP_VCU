@@ -5,10 +5,9 @@ pipeline {
         MODELSIM_HOME = 'C:\\modeltech64_10.6d\\win64'
         GIT_PATH = 'C:\\Users\\martin\\AppData\\Local\\Programs\\Git\\bin\\git.exe'
         TOP_LEVEL_ENTITY = 'hcmt_cpld_top'
-        TEST_RESULTS_XML = 'test_results.xml'  // JUnit XML file
+        TEST_RESULTS_XML = 'test_results.xml'
         CONVERT_SCRIPT = 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\convert_to_junit_xml.py'
-        SOURCE_DIR = 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\source'
-        TESTBENCHES_DIR = 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\testbenches'
+        COMPILE_SCRIPT = 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\compile_vhdl.bat'
     }
 
     stages {
@@ -68,15 +67,8 @@ pipeline {
         stage('Compile VHDL') {
             steps {
                 script {
-                    def vsimExe = "${env.MODELSIM_HOME}/vsim.exe"
-                    def compileCommand = """
-                        "${vsimExe}" -c -do "vlib work; vcom -2008 -work work \\"${env.SOURCE_DIR}\\*.vhdl\\"; vcom -2008 -work work \\"${env.TESTBENCHES_DIR}\\*.vhdl\\""
-                    """
-                    
-                    echo "Running compile command: ${compileCommand}"
-                    
-                    // Use a single bat step to run the command
-                    bat(script: "${compileCommand}", returnStatus: true, returnStdout: true).eachLine { line -> echo line }
+                    echo "Running VHDL compilation..."
+                    bat(script: "${env.COMPILE_SCRIPT}", returnStatus: true, returnStdout: true).eachLine { line -> echo line }
                 }
             }
         }
@@ -87,7 +79,6 @@ pipeline {
                     def vsimExe = "${env.MODELSIM_HOME}/vsim.exe"
                     def simulationCommand = "\"${vsimExe}\" -c -do \"vsim work.${env.TOP_LEVEL_ENTITY}; run -all; quit\""
                     
-                    // Run the simulation and redirect output to simulation.log
                     echo "Running simulation command: ${simulationCommand}"
                     bat(script: "${simulationCommand} > simulation.log", returnStatus: true)
                     
