@@ -69,15 +69,20 @@ pipeline {
             steps {
                 script {
                     def vsimExe = "${env.MODELSIM_HOME}/vsim.exe"
-                    def compileCommand = """
-                    \"${vsimExe}\" -c -do "
-                    vlib work;
-                    vcom -2008 -work work \\"${env.SOURCE_DIR}\\*.vhdl\\";
-                    vcom -2008 -work work \\"${env.TESTBENCHES_DIR}\\*.vhdl\\"
-                    "
-                    """
-                    echo "Running compile command: ${compileCommand}"
-                    bat(script: "${compileCommand}", returnStatus: true, returnStdout: true).eachLine { line -> echo line }
+                    
+                    // Prepare the command
+                    def vlibCommand = "\"${vsimExe}\" -c -do \"vlib work\""
+                    def vcomSourceCommand = "\"${vsimExe}\" -c -do \"vcom -2008 -work work \\\"${env.SOURCE_DIR}\\*.vhdl\\\"\""
+                    def vcomTestbenchCommand = "\"${vsimExe}\" -c -do \"vcom -2008 -work work \\\"${env.TESTBENCHES_DIR}\\*.vhdl\\\"\""
+                    
+                    echo "Running vlib command: ${vlibCommand}"
+                    bat(script: "${vlibCommand}", returnStatus: true, returnStdout: true).eachLine { line -> echo line }
+                    
+                    echo "Running vcom command for source files: ${vcomSourceCommand}"
+                    bat(script: "${vcomSourceCommand}", returnStatus: true, returnStdout: true).eachLine { line -> echo line }
+                    
+                    echo "Running vcom command for testbenches: ${vcomTestbenchCommand}"
+                    bat(script: "${vcomTestbenchCommand}", returnStatus: true, returnStdout: true).eachLine { line -> echo line }
                 }
             }
         }
@@ -86,13 +91,7 @@ pipeline {
             steps {
                 script {
                     def vsimExe = "${env.MODELSIM_HOME}/vsim.exe"
-                    def simulationCommand = """
-                    \"${vsimExe}\" -c -do "
-                    vsim work.${env.TOP_LEVEL_ENTITY};
-                    run -all;
-                    quit
-                    "
-                    """
+                    def simulationCommand = "\"${vsimExe}\" -c -do \"vsim work.${env.TOP_LEVEL_ENTITY}; run -all; quit\""
                     
                     // Run the simulation and redirect output to simulation.log
                     echo "Running simulation command: ${simulationCommand}"
