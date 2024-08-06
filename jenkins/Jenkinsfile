@@ -62,19 +62,16 @@ pipeline {
                 script {
                     def vsimExe = "${env.MODELSIM_HOME}/vsim.exe"
                     def simulationCommand = "\"${vsimExe}\" -c -do \"vsim work.${env.TOP_LEVEL_ENTITY}; run -all; quit\""
+                    
+                    // Run the simulation and redirect output to simulation.log
                     bat(script: "cd /d %WORKSPACE%\\ART_QTMP && ${simulationCommand} > simulation.log", returnStatus: true)
-
+                    
+                    // Verify if simulation.log is created and list its contents
+                    bat 'dir %WORKSPACE%\\ART_QTMP\\simulation.log'
+                    bat 'type %WORKSPACE%\\ART_QTMP\\simulation.log'
+                    
                     // Convert simulation results to JUnit XML
-                    bat "python ${env.CONVERT_SCRIPT} simulation.log ${env.TEST_RESULTS_XML}"
-                }
-            }
-        }
-
-        stage('List Workspace Files') {
-            steps {
-                script {
-                    // Ensure files are in the expected locations
-                    bat 'dir %WORKSPACE%\\ART_QTMP'
+                    bat "python ${env.CONVERT_SCRIPT} %WORKSPACE%\\ART_QTMP\\simulation.log %WORKSPACE%\\ART_QTMP\\${env.TEST_RESULTS_XML}"
                 }
             }
         }
