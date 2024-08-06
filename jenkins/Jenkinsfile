@@ -13,19 +13,27 @@ pipeline {
         stage('Cleanup') {
             steps {
                 script {
-                    // Remove the existing ART_QTMP directory if it exists
+                    // Remove all files and folders in the workspace
                     bat 'if exist "%WORKSPACE%" rd /s /q "%WORKSPACE%"'
                 }
             }
         }
 
-        stage('Checkout') {
+        stage('Initialize') {
             steps {
                 script {
-                    // Clone the repository directly into the workspace (ART_QTMP)
-                    bat """
-                    "%GIT_PATH%" clone https://github.com/MNMenendez/QTMP_VCU.git .
-                    """
+                    // Initialize Git repository if not already initialized
+                    bat '''
+                    if not exist ".git" (
+                        echo Repository not initialized. Cloning repository...
+                        "%GIT_PATH%" clone https://github.com/MNMenendez/QTMP_VCU.git .
+                    ) else (
+                        echo Repository already initialized. Pulling latest changes...
+                        "%GIT_PATH%" fetch --all
+                        "%GIT_PATH%" reset --hard origin/main
+                        "%GIT_PATH%" pull
+                    )
+                    '''
                 }
             }
         }
@@ -78,4 +86,26 @@ pipeline {
 
         stage('Archive Results') {
             steps {
-                archiveArtifacts artifacts: 'te
+                archiveArtifacts artifacts: 'test_results.xml', allowEmptyArchive: true
+            }
+        }
+
+        stage('Publish Test Results') {
+            steps {
+                publishTestResults testResults: [[reportFiles: 'test_results.xml']]
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'Cleaning up...'
+        }
+        success {
+            echo 'Tests passed successfully!'
+        }
+        failure {
+            echo 'Tests failed. Please check the logs.'
+        }
+    }
+}
