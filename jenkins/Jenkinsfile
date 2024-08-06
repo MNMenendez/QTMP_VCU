@@ -90,7 +90,8 @@ pipeline {
                     sourceFiles.split('\r?\n').each { file ->
                         if (file.trim()) {
                             echo "Compiling source file: ${file}"
-                            def compileCommand = "\"${env.MODELSIM_HOME}\\vsim.exe\" -c -do \"vlib work; vcom -2008 -work work \\\"${file}\\\"\""
+                            def formattedPath = file.replace('\\', '/')
+                            def compileCommand = "\"${env.MODELSIM_HOME}/vsim.exe\" -c -do \"vlib work; vcom -2008 -work work \\\"${formattedPath}\\\"\""
                             echo "Running command: ${compileCommand}"
                             def result = bat(script: compileCommand, returnStatus: true, returnStdout: true).trim()
                             echo "Compilation output:\n${result}"
@@ -119,7 +120,8 @@ pipeline {
                     testbenchFiles.split('\r?\n').each { file ->
                         if (file.trim()) {
                             echo "Compiling testbench file: ${file}"
-                            def compileCommand = "\"${env.MODELSIM_HOME}\\vsim.exe\" -c -do \"vcom -2008 -work work \\\"${file}\\\"\""
+                            def formattedPath = file.replace('\\', '/')
+                            def compileCommand = "\"${env.MODELSIM_HOME}/vsim.exe\" -c -do \"vcom -2008 -work work \\\"${formattedPath}\\\"\""
                             echo "Running command: ${compileCommand}"
                             def result = bat(script: compileCommand, returnStatus: true, returnStdout: true).trim()
                             echo "Compilation output:\n${result}"
