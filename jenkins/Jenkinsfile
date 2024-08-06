@@ -71,16 +71,14 @@ pipeline {
 
                     echo "Running VHDL compilation..."
 
-                    // Compile all source files
-                    echo "Compiling source files..."
+                    // Get all source files
                     def sourceFiles = powershell(script: """
                         Get-ChildItem -Path '${sourceDir}' -Filter '*.vhdl' | 
-                        Select-Object -ExpandProperty FullName | 
-                        ForEach-Object { Write-Output $_ }
-                    """, returnStdout: true).trim()
-                    
+                        Select-Object -ExpandProperty FullName
+                    """, returnStdout: true).trim().split('\r?\n')
+
                     if (sourceFiles) {
-                        sourceFiles.split('\r?\n').each { file ->
+                        sourceFiles.each { file ->
                             echo "Compiling source file: ${file}"
                             def result = bat(script: "\"${env.MODELSIM_HOME}\\vsim.exe\" -c -do \"vlib work; vcom -2008 -work work \\\"${file}\\\"\"", returnStatus: true, returnStdout: true).trim()
                             echo "Compilation output:\n${result}"
@@ -92,16 +90,14 @@ pipeline {
                         echo "No source files found in ${sourceDir}"
                     }
 
-                    // Compile all testbench files
-                    echo "Compiling testbench files..."
-                    def testbenchesFiles = powershell(script: """
+                    // Get all testbench files
+                    def testbenchFiles = powershell(script: """
                         Get-ChildItem -Path '${testbenchesDir}' -Filter '*.vhdl' | 
-                        Select-Object -ExpandProperty FullName | 
-                        ForEach-Object { Write-Output $_ }
-                    """, returnStdout: true).trim()
+                        Select-Object -ExpandProperty FullName
+                    """, returnStdout: true).trim().split('\r?\n')
 
-                    if (testbenchesFiles) {
-                        testbenchesFiles.split('\r?\n').each { file ->
+                    if (testbenchFiles) {
+                        testbenchFiles.each { file ->
                             echo "Compiling testbench file: ${file}"
                             def result = bat(script: "\"${env.MODELSIM_HOME}\\vsim.exe\" -c -do \"vcom -2008 -work work \\\"${file}\\\"\"", returnStatus: true, returnStdout: true).trim()
                             echo "Compilation output:\n${result}"
