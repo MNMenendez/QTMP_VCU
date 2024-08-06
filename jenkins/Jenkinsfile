@@ -24,7 +24,9 @@ pipeline {
                 script {
                     // Clone the repository directly into the ART_QTMP directory
                     bat """
-                    "%GIT_PATH%" clone https://github.com/MNMenendez/QTMP_VCU.git %WORKSPACE%\\ART_QTMP
+                    cd /d %WORKSPACE%
+                    if not exist ART_QTMP mkdir ART_QTMP
+                    "%GIT_PATH%" clone https://github.com/MNMenendez/QTMP_VCU.git ART_QTMP
                     """
                 }
             }
