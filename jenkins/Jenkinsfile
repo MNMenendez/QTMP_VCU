@@ -13,7 +13,7 @@ pipeline {
         stage('Cleanup') {
             steps {
                 script {
-                    // Remove existing ART_QTMP directory if it exists
+                    // Remove the existing ART_QTMP directory if it exists
                     bat 'if exist "%WORKSPACE%\\ART_QTMP" rd /s /q "%WORKSPACE%\\ART_QTMP"'
                 }
             }
@@ -22,7 +22,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 script {
-                    // Clone the repository directly into ART_QTMP
+                    // Clone the repository directly into the ART_QTMP directory
                     bat """
                     "%GIT_PATH%" clone https://github.com/MNMenendez/QTMP_VCU.git %WORKSPACE%\\ART_QTMP
                     """
@@ -33,7 +33,7 @@ pipeline {
         stage('Verify Files') {
             steps {
                 script {
-                    // List files to verify presence
+                    // List files to verify the directory structure
                     bat "dir %WORKSPACE%\\ART_QTMP"
                 }
             }
