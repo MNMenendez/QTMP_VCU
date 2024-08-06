@@ -22,7 +22,7 @@ pipeline {
             steps {
                 script {
                     bat """
-                    "%GIT_PATH%" clone https://github.com/MNMenendez/QTMP_VCU.git
+                    "%GIT_PATH%" clone https://github.com/MNMenendez/QTMP_VCU.git ART_QTMP
                     """
                 }
             }
@@ -31,7 +31,7 @@ pipeline {
         stage('Verify Files') {
             steps {
                 script {
-                    bat "dir %WORKSPACE%\\QTMP_VCU"
+                    bat "dir %WORKSPACE%\\ART_QTMP"
                 }
             }
         }
@@ -49,7 +49,7 @@ pipeline {
                 script {
                     def vsimExe = "${env.MODELSIM_HOME}/vsim.exe"
                     def compileCommand = "\"${vsimExe}\" -c -do \"vlib work; vcom -2008 -work work source/*.vhdl; vcom -2008 -work work testbenches/*.vhdl\""
-                    bat(script: "cd /d %WORKSPACE%\\QTMP_VCU && ${compileCommand}", returnStatus: true)
+                    bat(script: "cd /d %WORKSPACE%\\ART_QTMP && ${compileCommand}", returnStatus: true)
                 }
             }
         }
@@ -59,7 +59,7 @@ pipeline {
                 script {
                     def vsimExe = "${env.MODELSIM_HOME}/vsim.exe"
                     def simulationCommand = "\"${vsimExe}\" -c -do \"vsim work.${env.TOP_LEVEL_ENTITY}; run -all; quit\""
-                    bat(script: "cd /d %WORKSPACE%\\QTMP_VCU && ${simulationCommand} > simulation.log", returnStatus: true)
+                    bat(script: "cd /d %WORKSPACE%\\ART_QTMP && ${simulationCommand} > simulation.log", returnStatus: true)
 
                     // Convert simulation results to JUnit XML
                     bat "python ${env.CONVERT_SCRIPT} simulation.log ${env.TEST_RESULTS_XML}"
@@ -70,20 +70,20 @@ pipeline {
         stage('List Workspace Files') {
             steps {
                 script {
-                    bat 'dir %WORKSPACE%\\QTMP_VCU'
+                    bat 'dir %WORKSPACE%\\ART_QTMP'
                 }
             }
         }
 
         stage('Archive Results') {
             steps {
-                archiveArtifacts artifacts: 'QTMP_VCU/test_results.xml', allowEmptyArchive: true
+                archiveArtifacts artifacts: 'ART_QTMP/test_results.xml', allowEmptyArchive: true
             }
         }
 
         stage('Publish Test Results') {
             steps {
-                publishTestResults testResults: [[reportFiles: 'QTMP_VCU/test_results.xml']]
+                publishTestResults testResults: [[reportFiles: 'ART_QTMP/test_results.xml']]
             }
         }
     }
