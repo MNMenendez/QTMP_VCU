@@ -69,20 +69,14 @@ pipeline {
             steps {
                 script {
                     def vsimExe = "${env.MODELSIM_HOME}/vsim.exe"
+                    def compileCommand = """
+                        "${vsimExe}" -c -do "vlib work; vcom -2008 -work work \\"${env.SOURCE_DIR}\\*.vhdl\\"; vcom -2008 -work work \\"${env.TESTBENCHES_DIR}\\*.vhdl\\""
+                    """
                     
-                    // Prepare the command
-                    def vlibCommand = "\"${vsimExe}\" -c -do \"vlib work\""
-                    def vcomSourceCommand = "\"${vsimExe}\" -c -do \"vcom -2008 -work work \\\"${env.SOURCE_DIR}\\*.vhdl\\\"\""
-                    def vcomTestbenchCommand = "\"${vsimExe}\" -c -do \"vcom -2008 -work work \\\"${env.TESTBENCHES_DIR}\\*.vhdl\\\"\""
+                    echo "Running compile command: ${compileCommand}"
                     
-                    echo "Running vlib command: ${vlibCommand}"
-                    bat(script: "${vlibCommand}", returnStatus: true, returnStdout: true).eachLine { line -> echo line }
-                    
-                    echo "Running vcom command for source files: ${vcomSourceCommand}"
-                    bat(script: "${vcomSourceCommand}", returnStatus: true, returnStdout: true).eachLine { line -> echo line }
-                    
-                    echo "Running vcom command for testbenches: ${vcomTestbenchCommand}"
-                    bat(script: "${vcomTestbenchCommand}", returnStatus: true, returnStdout: true).eachLine { line -> echo line }
+                    // Use a single bat step to run the command
+                    bat(script: "${compileCommand}", returnStatus: true, returnStdout: true).eachLine { line -> echo line }
                 }
             }
         }
