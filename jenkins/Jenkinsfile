@@ -34,8 +34,8 @@ pipeline {
                         "%GIT_PATH%" clone https://github.com/MNMenendez/QTMP_VCU.git .
                     ) else (
                         echo Repository already initialized. Checking out branch and pulling latest changes...
-                        "%GIT_PATH%" checkout main || echo "Branch not found, creating main branch" && "%GIT_PATH%" checkout -b main
                         "%GIT_PATH%" fetch --all
+                        "%GIT_PATH%" checkout main || "%GIT_PATH%" checkout -b main
                         "%GIT_PATH%" reset --hard origin/main
                         "%GIT_PATH%" pull origin main
                     )
@@ -92,14 +92,14 @@ pipeline {
 
         stage('Archive Results') {
             steps {
-                archiveArtifacts artifacts: 'test_results.xml', allowEmptyArchive: true
+                archiveArtifacts artifacts: "${env.TEST_RESULTS_XML}", allowEmptyArchive: true
             }
         }
 
         stage('Publish Test Results') {
             steps {
                 // Publish test results
-                junit '**/test_results.xml'
+                junit '**/${env.TEST_RESULTS_XML}'
             }
         }
     }
