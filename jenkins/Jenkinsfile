@@ -75,11 +75,11 @@ pipeline {
                     def sourceFiles = powershell(script: """
                         Get-ChildItem -Path '${sourceDir}' -Filter '*.vhdl' | 
                         Select-Object -ExpandProperty FullName
-                    """, returnStdout: true).trim().split('\r?\n')
+                    """, returnStdout: true).trim()
 
                     echo "Source files found:"
                     if (sourceFiles) {
-                        sourceFiles.each { file ->
+                        sourceFiles.split('\r?\n').each { file ->
                             echo " - ${file}"
                         }
                     } else {
@@ -87,7 +87,7 @@ pipeline {
                     }
 
                     // Compile each source file
-                    sourceFiles.each { file ->
+                    sourceFiles.split('\r?\n').each { file ->
                         if (file.trim()) {
                             echo "Compiling source file: ${file}"
                             def compileCommand = "\"${env.MODELSIM_HOME}\\vsim.exe\" -c -do \"vlib work; vcom -2008 -work work \\\"${file}\\\"\""
@@ -104,11 +104,11 @@ pipeline {
                     def testbenchFiles = powershell(script: """
                         Get-ChildItem -Path '${testbenchesDir}' -Filter '*.vhdl' | 
                         Select-Object -ExpandProperty FullName
-                    """, returnStdout: true).trim().split('\r?\n')
+                    """, returnStdout: true).trim()
 
                     echo "Testbench files found:"
                     if (testbenchFiles) {
-                        testbenchFiles.each { file ->
+                        testbenchFiles.split('\r?\n').each { file ->
                             echo " - ${file}"
                         }
                     } else {
@@ -116,7 +116,7 @@ pipeline {
                     }
 
                     // Compile each testbench file
-                    testbenchFiles.each { file ->
+                    testbenchFiles.split('\r?\n').each { file ->
                         if (file.trim()) {
                             echo "Compiling testbench file: ${file}"
                             def compileCommand = "\"${env.MODELSIM_HOME}\\vsim.exe\" -c -do \"vcom -2008 -work work \\\"${file}\\\"\""
