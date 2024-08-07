@@ -31,7 +31,7 @@ launch_simulation -simset [get_filesets $sim_fileset]
 close_sim
 
 # Look for assertion failures in the simulation log
-set log_file [glob -nocomplain *sim/$sim_fileset/behav/xsim/simulate.log]
+set log_file [glob -nocomplain *sim/$sim_fileset/behav/xsim/simulation.log]
 if {[llength $log_file] == 0} {
     puts "ERROR: Simulation log file not found."
     exit 1
