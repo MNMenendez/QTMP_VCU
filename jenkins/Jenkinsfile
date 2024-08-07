@@ -12,7 +12,7 @@ pipeline {
     }
 
     stages {
-        stage('Sync Repository and Create Project') {
+        stage('Creating Project') {
             steps {
                 script {
                     echo "Cleaning up workspace..."
@@ -43,11 +43,11 @@ pipeline {
                     bat 'dir "C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\testbenches"'
                     
                     echo "Vivado Path: ${env.VIVADO_PATH}"
-
+                    
                     echo "Creating Vivado project..."
-                    bat '''
+                    bat """
                     "%VIVADO_PATH%\\vivado" -mode batch -source ${env.SCRIPT_PATH}\\create_vivado_proj.tcl
-                    '''
+                    """
                 }
             }
         }
@@ -57,7 +57,7 @@ pipeline {
                 script {
                     echo "Running Vivado simulation..."
                     bat """
-                    "${env.VIVADO_PATH}\\vivado" -mode batch -source ${env.SCRIPT_PATH}\\run_simulation.tcl
+                    "%VIVADO_PATH%\\vivado" -mode batch -source ${env.SCRIPT_PATH}\\run_simulation.tcl
                     """
                 }
             }
@@ -68,7 +68,7 @@ pipeline {
                 script {
                     echo "Running Vivado synthesis..."
                     bat """
-                    "${env.VIVADO_PATH}\\vivado" -mode batch -source ${env.SCRIPT_PATH}\\run_synthesis.tcl
+                    "%VIVADO_PATH%\\vivado" -mode batch -source ${env.SCRIPT_PATH}\\run_synthesis.tcl
                     """
                 }
             }
@@ -79,7 +79,7 @@ pipeline {
                 script {
                     echo "Running Vivado implementation..."
                     bat """
-                    "${env.VIVADO_PATH}\\vivado" -mode batch -source ${env.SCRIPT_PATH}\\run_implementation.tcl
+                    "%VIVADO_PATH%\\vivado" -mode batch -source ${env.SCRIPT_PATH}\\run_implementation.tcl
                     """
                 }
             }
@@ -90,7 +90,7 @@ pipeline {
                 script {
                     echo "Generating bitstream with Vivado..."
                     bat """
-                    "${env.VIVADO_PATH}\\vivado" -mode batch -source ${env.SCRIPT_PATH}\\generate_bitstream.tcl
+                    "%VIVADO_PATH%\\vivado" -mode batch -source ${env.SCRIPT_PATH}\\generate_bitstream.tcl
                     """
                 }
             }
