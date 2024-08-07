@@ -12,7 +12,7 @@ pipeline {
     }
 
     stages {
-        stage('Cleanup') {
+        stage('Sync Repository') {
             steps {
                 script {
                     echo "Cleaning up workspace..."
@@ -22,13 +22,7 @@ pipeline {
                     echo Deleting old directories...
                     for /d %%p in (%WORKSPACE%\\*) do rd /s /q "%%p"
                     '''
-                }
-            }
-        }
-
-        stage('Initialize') {
-            steps {
-                script {
+                    
                     echo "Initializing repository..."
                     bat '''
                     if not exist ".git" (
@@ -42,24 +36,12 @@ pipeline {
                         "%GIT_PATH%" pull origin main
                     )
                     '''
-                }
-            }
-        }
-
-        stage('Verify Files') {
-            steps {
-                script {
+                    
                     echo "Verifying files in workspace..."
                     bat 'dir'
                     bat 'dir "C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\source"'
                     bat 'dir "C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\testbenches"'
-                }
-            }
-        }
-
-        stage('Setup') {
-            steps {
-                script {
+                    
                     echo "Vivado Path: ${env.VIVADO_PATH}"
                 }
             }
