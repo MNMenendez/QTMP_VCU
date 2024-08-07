@@ -8,6 +8,7 @@ pipeline {
         TEST_RESULTS_XML = 'test_results.xml'
         CONVERT_SCRIPT = 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\convert_to_junit_xml.py'
         VIVADO_PATH = 'C:\\Xilinx\\Vivado\\2024.1\\bin'
+        SCRIPT_PATH = 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\scripts'
     }
 
     stages {
@@ -69,7 +70,7 @@ pipeline {
                 script {
                     echo "Running Vivado simulation..."
                     bat """
-                    "${env.VIVADO_PATH}\\vivado" -mode batch -source run_simulation.tcl
+                    "${env.VIVADO_PATH}\\vivado" -mode batch -source ${env.SCRIPT_PATH}\\run_simulation.tcl
                     """
                 }
             }
@@ -80,7 +81,7 @@ pipeline {
                 script {
                     echo "Running Vivado synthesis..."
                     bat """
-                    "${env.VIVADO_PATH}\\vivado" -mode batch -source run_synthesis.tcl
+                    "${env.VIVADO_PATH}\\vivado" -mode batch -source ${env.SCRIPT_PATH}\\run_synthesis.tcl
                     """
                 }
             }
@@ -91,7 +92,7 @@ pipeline {
                 script {
                     echo "Running Vivado implementation..."
                     bat """
-                    "${env.VIVADO_PATH}\\vivado" -mode batch -source run_implementation.tcl
+                    "${env.VIVADO_PATH}\\vivado" -mode batch -source ${env.SCRIPT_PATH}\\run_implementation.tcl
                     """
                 }
             }
@@ -102,7 +103,7 @@ pipeline {
                 script {
                     echo "Generating bitstream with Vivado..."
                     bat """
-                    "${env.VIVADO_PATH}\\vivado" -mode batch -source generate_bitstream.tcl
+                    "${env.VIVADO_PATH}\\vivado" -mode batch -source ${env.SCRIPT_PATH}\\generate_bitstream.tcl
                     """
                 }
             }
@@ -113,7 +114,7 @@ pipeline {
                 script {
                     echo "Releasing bitfile..."
                     bat '''
-                    set PROJ_NAME=seg7
+                    set PROJ_NAME=QTMP_VCU
                     set RELEASE_DIR=C:\\path\\to\\release\\directory
   
                     set BASE_NAME=%PROJ_NAME%-%DATE:~-4%-%DATE:~4,2%-%DATE:~7,2%-%TIME:~0,2%-%TIME:~3,2%
@@ -129,7 +130,7 @@ pipeline {
                     git submodule status >> %INFOFILE%
   
                     copy %INFOFILE% %RELEASE_DIR%
-                    copy vivado\\seg7.runs\\impl_1\\top.bit %RELEASE_DIR%\\%BITFILE%
+                    copy vivado\\%PROJ_NAME%.runs\\impl_1\\top.bit %RELEASE_DIR%\\%BITFILE%
                     '''
                 }
             }
