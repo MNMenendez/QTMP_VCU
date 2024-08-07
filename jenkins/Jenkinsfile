@@ -7,6 +7,7 @@ pipeline {
         TOP_LEVEL_ENTITY = 'hcmt_cpld_top'
         TEST_RESULTS_XML = 'test_results.xml'
         CONVERT_SCRIPT = 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\convert_to_junit_xml.py'
+        VIVADO_PATH = 'C:\\Xilinx\\Vivado\\2024.1\\bin\\vivado'
     }
 
     stages {
@@ -58,72 +59,7 @@ pipeline {
         stage('Setup') {
             steps {
                 script {
-                    echo "ModelSim Home: ${env.MODELSIM_HOME}"
-                }
-            }
-        }
-
-        stage('Compile VHDL') {
-            steps {
-                script {
-                    def sourceDir = 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\source'
-                    def testbenchesDir = 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\testbenches'
-
-                    echo "Running VHDL compilation..."
-
-                    // List and debug source files
-                    def sourceFiles = powershell(script: """
-                        Get-ChildItem -Path '${sourceDir}' -Filter '*.VHD' -Recurse | 
-                        Select-Object -ExpandProperty FullName
-                    """, returnStdout: true).trim()
-
-                    echo "Source files found:"
-                    if (sourceFiles) {
-                        sourceFiles.split('\r?\n').each { file ->
-                            echo " - ${file}"
-                        }
-                    } else {
-                        echo "No source files found in ${sourceDir}"
-                    }
-
-                    // Compile each source file
-                    sourceFiles.split('\r?\n').each { file ->
-                        if (file.trim()) {
-                            echo "Compiling source file: ${file}"
-                            def formattedPath = file.replace('\\', '\\\\')
-                            bat """
-                            echo Compiling file: ${file}
-                            "${env.MODELSIM_HOME}\\vsim.exe" -c -do "vlib work; vcom -2008 -work work \\"${formattedPath}\\""
-                            """
-                        }
-                    }
-
-                    // List and debug testbench files
-                    def testbenchFiles = powershell(script: """
-                        Get-ChildItem -Path '${testbenchesDir}' -Filter '*.VHD' -Recurse | 
-                        Select-Object -ExpandProperty FullName
-                    """, returnStdout: true).trim()
-
-                    echo "Testbench files found:"
-                    if (testbenchFiles) {
-                        testbenchFiles.split('\r?\n').each { file ->
-                            echo " - ${file}"
-                        }
-                    } else {
-                        echo "No testbench files found in ${testbenchesDir}"
-                    }
-
-                    // Compile each testbench file
-                    testbenchFiles.split('\r?\n').each { file ->
-                        if (file.trim()) {
-                            echo "Compiling testbench file: ${file}"
-                            def formattedPath = file.replace('\\', '\\\\')
-                            bat """
-                            echo Compiling file: ${file}
-                            "${env.MODELSIM_HOME}\\vsim.exe" -c -do "vcom -2008 -work work \\"${formattedPath}\\""
-                            """
-                        }
-                    }
+                    echo "Vivado Path: ${env.VIVADO_PATH}"
                 }
             }
         }
@@ -131,17 +67,78 @@ pipeline {
         stage('Run Simulation') {
             steps {
                 script {
-                    def vsimExe = "${env.MODELSIM_HOME}/vsim.exe"
-                    def simulationCommand = "\"${vsimExe}\" -c -do \"vsim work.${env.TOP_LEVEL_ENTITY}; run -all; quit\""
-                    
-                    echo "Running simulation command: ${simulationCommand}"
-                    bat(script: "${simulationCommand} > simulation.log", returnStatus: true)
-                    
-                    // Verify if simulation.log is created and list its contents
-                    bat 'dir simulation.log'
-                    bat 'type simulation.log'
-                    
-                    // Convert simulation results to JUnit XML
+                    echo "Running Vivado simulation..."
+                    bat """
+                    "${env.VIVADO_PATH}\\vivado" -mode batch -source run_simulation.tcl
+                    """
+                }
+            }
+        }
+
+        stage('Run Synthesis') {
+            steps {
+                script {
+                    echo "Running Vivado synthesis..."
+                    bat """
+                    "${env.VIVADO_PATH}\\vivado" -mode batch -source run_synthesis.tcl
+                    """
+                }
+            }
+        }
+
+        stage('Run Implementation') {
+            steps {
+                script {
+                    echo "Running Vivado implementation..."
+                    bat """
+                    "${env.VIVADO_PATH}\\vivado" -mode batch -source run_implementation.tcl
+                    """
+                }
+            }
+        }
+
+        stage('Generate Bitstream') {
+            steps {
+                script {
+                    echo "Generating bitstream with Vivado..."
+                    bat """
+                    "${env.VIVADO_PATH}\\vivado" -mode batch -source generate_bitstream.tcl
+                    """
+                }
+            }
+        }
+
+        stage('Release Bitfile') {
+            steps {
+                script {
+                    echo "Releasing bitfile..."
+                    bat '''
+                    set PROJ_NAME=seg7
+                    set RELEASE_DIR=C:\\path\\to\\release\\directory
+  
+                    set BASE_NAME=%PROJ_NAME%-%DATE:~-4%-%DATE:~4,2%-%DATE:~7,2%-%TIME:~0,2%-%TIME:~3,2%
+                    set BITFILE=%BASE_NAME%.bit
+                    set INFOFILE=%BASE_NAME%.txt
+  
+                    git log -n 1 --pretty=format:"%H" >> %INFOFILE%
+                    echo -n " %PROJ_NAME% " >> %INFOFILE%
+                    git describe --all >> %INFOFILE%
+  
+                    echo "" >> %INFOFILE%
+                    echo "Submodules:" >> %INFOFILE%
+                    git submodule status >> %INFOFILE%
+  
+                    copy %INFOFILE% %RELEASE_DIR%
+                    copy vivado\\seg7.runs\\impl_1\\top.bit %RELEASE_DIR%\\%BITFILE%
+                    '''
+                }
+            }
+        }
+
+        stage('Convert Test Results') {
+            steps {
+                script {
+                    echo "Converting simulation results to JUnit XML..."
                     bat "python ${env.CONVERT_SCRIPT} simulation.log ${env.TEST_RESULTS_XML}"
                 }
             }
