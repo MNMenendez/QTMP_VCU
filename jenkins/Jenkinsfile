@@ -7,7 +7,7 @@ pipeline {
         TOP_LEVEL_ENTITY = 'hcmt_cpld_top'
         TEST_RESULTS_XML = 'test_results.xml'
         CONVERT_SCRIPT = 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\convert_to_junit_xml.py'
-        VIVADO_PATH = 'C:\\Xilinx\\Vivado\\2024.1\\bin\\vivado'
+        VIVADO_PATH = 'C:\\Xilinx\\Vivado\\2024.1\\bin'
     }
 
     stages {
