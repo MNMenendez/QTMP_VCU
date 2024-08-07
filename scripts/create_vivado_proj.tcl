@@ -92,15 +92,9 @@ set obj [current_project]
 # Ensure only one instance of each property is set
 set_property -name "default_lib" -value "xil_defaultlib" -objects $obj
 set_property -name "enable_vhdl_2008" -value "1" -objects $obj
-set_property -name "enable_verilog_2001" -value "0" -objects $obj
-set_property -name "ip_cache_permissions" -value "read write" -objects $obj
-set_property -name "ip_output_repo" -value "$proj_dir/${_xil_proj_name_}.cache/ip" -objects $obj
-set_property -name "mem.enable_memory_map_generation" -value "1" -objects $obj
-set_property -name "platform.board_id" -value "zed" -objects $obj
-set_property -name "sim.central_dir" -value "$proj_dir/${_xil_proj_name_}.ip_user_files" -objects $obj
-set_property -name "sim.ip.auto_export_scripts" -value "1" -objects $obj
-set_property -name "simulator_language" -value "VHDL" -objects $obj
-set_property -name "target_language" -value "VHDL" -objects $obj
+
+# No property for Verilog enablement as it was invalid
+# If needed, add any relevant Verilog property or settings here based on Vivado documentation
 
 # Debug message to confirm project setup
 puts "Project '${_xil_proj_name_}' created successfully."
