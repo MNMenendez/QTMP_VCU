@@ -63,6 +63,27 @@ pipeline {
             }
         }
 
+        stage('Convert Test Results') {
+            steps {
+                script {
+                    echo "Converting simulation results to JUnit XML..."
+                    bat "python ${env.CONVERT_SCRIPT} simulation.log ${env.TEST_RESULTS_XML}"
+                }
+            }
+        }
+
+        stage('Archive Results') {
+            steps {
+                archiveArtifacts artifacts: "${env.TEST_RESULTS_XML}", allowEmptyArchive: true
+            }
+        }
+
+        stage('Publish Test Results') {
+            steps {
+                junit '**/${env.TEST_RESULTS_XML}'
+            }
+        }
+
         stage('Run Synthesis') {
             steps {
                 script {
@@ -120,27 +141,6 @@ pipeline {
                     copy vivado\\%PROJ_NAME%.runs\\impl_1\\top.bit %RELEASE_DIR%\\%BITFILE%
                     '''
                 }
-            }
-        }
-
-        stage('Convert Test Results') {
-            steps {
-                script {
-                    echo "Converting simulation results to JUnit XML..."
-                    bat "python ${env.CONVERT_SCRIPT} simulation.log ${env.TEST_RESULTS_XML}"
-                }
-            }
-        }
-
-        stage('Archive Results') {
-            steps {
-                archiveArtifacts artifacts: "${env.TEST_RESULTS_XML}", allowEmptyArchive: true
-            }
-        }
-
-        stage('Publish Test Results') {
-            steps {
-                junit '**/${env.TEST_RESULTS_XML}'
             }
         }
     }
