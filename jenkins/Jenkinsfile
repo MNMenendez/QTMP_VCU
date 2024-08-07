@@ -12,7 +12,7 @@ pipeline {
     }
 
     stages {
-        stage('Sync Repository') {
+        stage('Sync Repository and Create Project') {
             steps {
                 script {
                     echo "Cleaning up workspace..."
@@ -43,6 +43,11 @@ pipeline {
                     bat 'dir "C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\testbenches"'
                     
                     echo "Vivado Path: ${env.VIVADO_PATH}"
+
+                    echo "Creating Vivado project..."
+                    bat '''
+                    "%VIVADO_PATH%\\vivado" -mode batch -source ${env.SCRIPT_PATH}\\create_vivado_proj.tcl
+                    '''
                 }
             }
         }
