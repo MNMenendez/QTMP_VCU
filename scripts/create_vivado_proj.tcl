@@ -7,7 +7,7 @@ if { [info exists ::origin_dir_loc] } {
 }
 
 # Set the project name
-set _xil_proj_name_ "packages"
+set _xil_proj_name_ "QTMP_VCU"
 
 # Use project name variable, if specified in the tcl shell
 if { [info exists ::user_project_name] } {
