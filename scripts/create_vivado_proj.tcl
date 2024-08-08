@@ -27,12 +27,12 @@ set_property -name "enable_vhdl_2008" -value "1" -objects $obj
 puts "Project '${_xil_proj_name_}' created successfully in '$proj_folder'."
 
 # Define directories for sources and testbenches
-set source_dir "${origin_dir}/source"
-set testbench_dir "${origin_dir}/testbenches"
+set sources_1_dir "${proj_folder}/QTMP_VCU.gen/sources_1"
+set testbench_dir "${proj_folder}/QTMP_VCU.gen/sources_1"
 
 # Add design files to sources_1
-add_files -fileset sources_1 [glob -nocomplain -directory $source_dir *.vhd]
-puts "Added design files from '$source_dir' to sources_1."
+add_files -fileset sources_1 [glob -nocomplain -directory $sources_1_dir *.vhd]
+puts "Added design files from '$sources_1_dir' to sources_1."
 
 # Add testbench files to sim_1
 add_files -fileset sim_1 [glob -nocomplain -directory $testbench_dir *.vhd]
@@ -41,7 +41,7 @@ puts "Added testbench files from '$testbench_dir' to sim_1."
 # Update compile order
 update_compile_order -fileset sources_1
 
-# Set top module for simulation (replace 'my_top_module' with your actual top module name)
-set_property top my_top_module [get_filesets sim_1]
+# Set top module for simulation
+set_property top hcmt_cpld_top [get_filesets sim_1]
 
 puts "Project setup completed."
