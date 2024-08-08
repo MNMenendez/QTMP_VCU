@@ -35,19 +35,17 @@ if {[file isdirectory $sources_1_dir] == 0} {
     puts "Created sources_1 directory at '$sources_1_dir'."
 }
 
-# Create and add files to sources_1
-set obj [get_filesets sources_1]
+# Add files to sources_1
 set source_dir "${origin_dir}/source"
 set files [glob -nocomplain -directory $source_dir *.vhd]
-
-# Add files to sources_1 if they are not already present
 foreach file $files {
-    if {[llength [get_files -fileset $obj -file [file tail $file]]] == 0} {
-        file copy -force $file [file join $sources_1_dir [file tail $file]]
-        add_files -norecurse -fileset $obj [file join $sources_1_dir [file tail $file]]
+    set filename [file tail $file]
+    if {[llength [get_files -file $filename]] == 0} {
+        file copy -force $file [file join $sources_1_dir $filename]
+        add_files -norecurse [file join $sources_1_dir $filename]
         puts "Added VHD file '$file' to sources_1."
     } else {
-        puts "File '$file' already exists in sources_1, skipping addition."
+        puts "File '$file' already exists in the project, skipping addition."
     }
 }
 
@@ -55,11 +53,12 @@ foreach file $files {
 set testbench_dir "${origin_dir}/testbenches"
 set files [glob -nocomplain -directory $testbench_dir *.vhd]
 foreach file $files {
-    if {[llength [get_files -fileset $obj -file [file tail $file]]] == 0} {
-        file copy -force $file [file join $sources_1_dir [file tail $file]]
-        add_files -norecurse -fileset $obj [file join $sources_1_dir [file tail $file]]
+    set filename [file tail $file]
+    if {[llength [get_files -file $filename]] == 0} {
+        file copy -force $file [file join $sources_1_dir $filename]
+        add_files -norecurse [file join $sources_1_dir $filename]
         puts "Added VHD file '$file' from testbenches to sources_1."
     } else {
-        puts "File '$file' from testbenches already exists in sources_1, skipping addition."
+        puts "File '$file' from testbenches already exists in the project, skipping addition."
     }
 }
