@@ -19,8 +19,23 @@ if {[file isdirectory $testbench_dir] == 0} {
 
 # Copy files from source to target directories
 # Correcting the xcopy command syntax
-exec xcopy /s /e /y "C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP/source/*" "$sources_1_dir" > nul 2>&1
-exec xcopy /s /e /y "C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP/testbenches/*" "$testbench_dir" > nul 2>&1
+set xcopy_cmd "xcopy /s /e /y \"C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP/source/*\" \"$sources_1_dir\""
+puts "Executing: $xcopy_cmd"
+set result [exec $xcopy_cmd]
+if {[llength $result] > 0} {
+    puts "xcopy command output: $result"
+} else {
+    puts "xcopy command executed successfully."
+}
+
+set xcopy_testbench_cmd "xcopy /s /e /y \"C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP/testbenches/*\" \"$testbench_dir\""
+puts "Executing: $xcopy_testbench_cmd"
+set result_testbench [exec $xcopy_testbench_cmd]
+if {[llength $result_testbench] > 0} {
+    puts "xcopy command output: $result_testbench"
+} else {
+    puts "xcopy command executed successfully."
+}
 
 # Add design files from sources_1
 set source_files [glob -nocomplain -directory $sources_1_dir *.vhd]
