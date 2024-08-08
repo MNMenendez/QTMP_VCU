@@ -41,6 +41,7 @@ puts "Project '${_xil_proj_name_}' created successfully."
 # Define paths for sources_1
 set sources_dir "${origin_dir}/${_xil_proj_name_}.gen/sources_1"
 set source_dir "${origin_dir}/source"
+set testbench_dir "${origin_dir}/testbenches"
 
 # Create the sources_1 directory if it does not exist
 if {![file exists $sources_dir]} {
@@ -64,10 +65,27 @@ if {[llength $files] == 0} {
         set dest_file [file join $sources_dir [file tail $file]]
         file copy -force $file $dest_file
     }
-    # Add VHD files from sources_1 directory to the fileset
-    set files [glob -nocomplain -directory $sources_dir *.vhd]
+}
+
+# Add VHD files from the testbenches directory to sources_1 fileset
+set files [glob -nocomplain -directory $testbench_dir *.vhd]
+if {[llength $files] == 0} {
+    puts "WARNING: No VHD files found in the testbenches directory '$testbench_dir'."
+} else {
+    # Move files to sources_1 directory
+    foreach file $files {
+        set dest_file [file join $sources_dir [file tail $file]]
+        file copy -force $file $dest_file
+    }
+}
+
+# Add all VHD files in the sources_1 directory to the sources_1 fileset
+set files [glob -nocomplain -directory $sources_dir *.vhd]
+if {[llength $files] == 0} {
+    puts "WARNING: No VHD files found in the sources_1 directory '$sources_dir'."
+} else {
     add_files -norecurse -fileset $obj $files
-    puts "Added VHD files from source directory to sources_1 fileset."
+    puts "Added VHD files from source and testbenches directories to sources_1 fileset."
 }
 
 # Ensure the constrs_1 fileset exists
@@ -82,15 +100,6 @@ if {[string equal [get_filesets -quiet sim_1] ""]} {
     create_fileset -simset sim_1
 }
 set obj [get_filesets sim_1]
-
-# Add VHD files from the testbenches directory
-set testbench_dir "${origin_dir}/testbenches"
-set files [glob -nocomplain -directory $testbench_dir *.vhd]
-if {[llength $files] == 0} {
-    puts "WARNING: No VHD files found in the testbenches directory '$testbench_dir'."
-} else {
-    add_files -norecurse -fileset $obj $files
-    puts "Added VHD files from testbenches directory."
-}
+puts "Simulation fileset 'sim_1' created."
 
 puts "All files added and properties set successfully."
