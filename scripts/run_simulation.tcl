@@ -38,23 +38,20 @@ if {[file exists $simulation_log]} {
     file delete $simulation_log
 }
 
-# Redirect simulation output to the log file
-log_file $simulation_log
-
 # Launch simulations for each testbench file
 foreach tb [glob -nocomplain -directory $testbench_dir *.vhd] {
     set tb_name [file rootname [file tail $tb]]
     puts "Launching simulation for testbench: $tb_name..."
-    puts "Launching simulation for testbench: $tb_name..." >> $simulation_log
 
-    # Launch simulation and redirect output to log file
-    launch_simulation -simset sim_1 >> $simulation_log 2>&1
+    # Redirect simulation output to the log file
+    set cmd "launch_simulation -simset sim_1"
+    set output [exec $cmd >> $simulation_log 2>&1]
 
     # Check if simulation failed
-    if {[catch {exec tail -n 10 $simulation_log} result]} {
-        puts "ERROR: Simulation for $tb_name failed. Check $simulation_log for details."
-    } else {
+    if {[lindex $output 0] == 0} {
         puts "Simulation for $tb_name completed successfully."
+    } else {
+        puts "ERROR: Simulation for $tb_name failed. Check $simulation_log for details."
     }
 }
 
