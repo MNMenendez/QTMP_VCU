@@ -10,8 +10,8 @@ if {[file exists $proj_file]} {
     exit 1
 }
 
-# Check if the project is read-only
-if {[file writable $proj_file] == 0} {
+# Check if the project is writable
+if {[catch {file writable $proj_file} writable_status] && !$writable_status} {
     puts "ERROR: Project '$proj_file' is read-only. Please change the project properties to make it writable."
     exit 1
 }
