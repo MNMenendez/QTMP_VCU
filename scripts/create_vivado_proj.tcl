@@ -1,5 +1,5 @@
 # Define the origin directory and project name
-set origin_dir "."
+set origin_dir "C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP"
 if {[info exists ::origin_dir_loc]} {
     set origin_dir $::origin_dir_loc
 }
