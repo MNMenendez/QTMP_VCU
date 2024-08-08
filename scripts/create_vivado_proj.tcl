@@ -34,20 +34,40 @@ set testbench_dir "${proj_folder}/QTMP_VCU.gen/testbenches"
 if {[file isdirectory $sources_1_dir] == 0} {
     file mkdir $sources_1_dir
     puts "Created sources_1 directory at '$sources_1_dir'."
+} else {
+    puts "Sources directory already exists at '$sources_1_dir'."
 }
 
 if {[file isdirectory $testbench_dir] == 0} {
     file mkdir $testbench_dir
     puts "Created testbenches directory at '$testbench_dir'."
+} else {
+    puts "Testbenches directory already exists at '$testbench_dir'."
 }
 
+# Check files in sources_1_dir
+set source_files [glob -nocomplain -directory $sources_1_dir *.vhd]
+puts "Files found in sources_1_dir: $source_files"
+
 # Add design files to sources_1
-add_files -fileset sources_1 [glob -nocomplain -directory $sources_1_dir *.vhd]
-puts "Added design files from '$sources_1_dir' to sources_1."
+if {[llength $source_files] > 0} {
+    add_files -fileset sources_1 $source_files
+    puts "Added design files from '$sources_1_dir' to sources_1."
+} else {
+    puts "ERROR: No VHD files found in '$sources_1_dir'."
+}
+
+# Check files in testbench_dir
+set testbench_files [glob -nocomplain -directory $testbench_dir *.vhd]
+puts "Files found in testbench_dir: $testbench_files"
 
 # Add testbench files to sim_1
-add_files -fileset sim_1 [glob -nocomplain -directory $testbench_dir *.vhd]
-puts "Added testbench files from '$testbench_dir' to sim_1."
+if {[llength $testbench_files] > 0} {
+    add_files -fileset sim_1 $testbench_files
+    puts "Added testbench files from '$testbench_dir' to sim_1."
+} else {
+    puts "ERROR: No VHD files found in '$testbench_dir'."
+}
 
 # Update compile order
 update_compile_order -fileset sources_1
