@@ -46,9 +46,11 @@ proc get_current_time {} {
 # Log the start of the simulation
 puts $log_fd "Simulation Log Started at [get_current_time]"
 
-# Debug: Check directory contents before simulation
+# Log the contents of the testbench directory before simulation
 puts $log_fd "Contents of testbench directory before simulation:"
-exec dir $testbench_dir >> $simulation_log
+foreach file [glob -nocomplain -directory $testbench_dir *] {
+    puts $log_fd [file tail $file]
+}
 
 # Get the list of testbenches
 set testbenches [glob -nocomplain -directory $testbench_dir *.vhd]
@@ -82,9 +84,11 @@ foreach tb $testbenches {
     }
 }
 
-# Debug: Check directory contents after simulation
+# Log the contents of the testbench directory after simulation
 puts $log_fd "Contents of testbench directory after simulation:"
-exec dir $testbench_dir >> $simulation_log
+foreach file [glob -nocomplain -directory $testbench_dir *] {
+    puts $log_fd [file tail $file]
+}
 
 # Close the log file
 close $log_fd
