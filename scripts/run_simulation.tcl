@@ -3,6 +3,7 @@ set sources_1_dir "C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP/QTMP_VCU/Q
 set testbench_dir "C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP/QTMP_VCU/QTMP_VCU.gen/testbenches"
 set project_dir "C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP/QTMP_VCU"
 set project_file "$project_dir/ART_QTMP.xpr"
+set simulation_log "$project_dir/simulation.log"
 
 # Ensure the directories exist
 if {[file isdirectory $sources_1_dir] == 0} {
@@ -52,13 +53,27 @@ if {[file isdirectory $project_dir] == 0} {
 save_project_as $project_file
 puts "Project saved to '$project_file'."
 
-# Launch simulation
+# Create or clear the simulation log
+if {[file exists $simulation_log]} {
+    file delete $simulation_log
+}
+file output $simulation_log
+
+# Launch simulations for each testbench file
 foreach tb [glob -nocomplain -directory $testbench_dir *.vhd] {
     set tb_name [file rootname [file tail $tb]]
     puts "Launching simulation for testbench: $tb_name..."
+    puts "Launching simulation for testbench: $tb_name..." >> $simulation_log
 
     # Set the simulation fileset
-    launch_simulation -simset sim_1
+    launch_simulation -simset sim_1 >> $simulation_log 2>&1
+
+    # Check if simulation failed
+    if {[catch {exec tail -n 10 $simulation_log} result]} {
+        puts "ERROR: Simulation for $tb_name failed. Check $simulation_log for details."
+    } else {
+        puts "Simulation for $tb_name completed successfully."
+    }
 }
 
-puts "Simulation launched."
+puts "All simulations launched."
