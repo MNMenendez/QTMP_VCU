@@ -43,11 +43,13 @@ update_compile_order -fileset sources_1
 # Set top module for simulation
 set_property top hcmt_cpld_top [get_filesets sim_1]
 
-# Save the project to disk
+# Ensure project directory exists
 if {[file isdirectory $project_dir] == 0} {
     file mkdir $project_dir
 }
-save_project_as -path $project_file
+
+# Save the project to disk
+save_project_as $project_file
 puts "Project saved to '$project_file'."
 
 # Launch simulation
