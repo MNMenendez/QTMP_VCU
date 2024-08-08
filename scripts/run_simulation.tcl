@@ -2,7 +2,7 @@
 set proj_folder "C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP/QTMP_VCU"
 set proj_file [file normalize "${proj_folder}/QTMP_VCU.xpr"]
 set sim_fileset "sim_1"
-set testbench_dir "${proj_folder}/testbenches"
+set testbench_dir "${proj_folder}/QTMP_VCU.gen/sources_1"
 
 # Check if the project file exists and open the project
 if {[file exists $proj_file]} {
@@ -27,6 +27,10 @@ if {[llength [get_filesets $sim_fileset]] == 0} {
 # Add all testbenches to the simulation fileset
 puts "Adding testbenches..."
 set testbenches [glob -nocomplain -directory $testbench_dir *.vhd]
+if {[llength $testbenches] == 0} {
+    puts "ERROR: No testbenches found in directory $testbench_dir."
+    exit 1
+}
 foreach tb $testbenches {
     add_files -fileset $sim_fileset $tb
     puts "Added testbench: $tb"
@@ -36,7 +40,7 @@ foreach tb $testbenches {
 update_compile_order -fileset $sim_fileset
 
 # Set the top module for simulation
-set_property top hcmt_cpld_top [get_filesets $sim_fileset]
+set_property top [lindex [get_filesets $sim_fileset] 0] [get_filesets $sim_fileset]
 
 # Launch simulation for each testbench and generate reports
 foreach tb $testbenches {
@@ -54,8 +58,9 @@ foreach tb $testbenches {
     wait_on_simulation
     
     # Check the simulation results
-    set simulation_status [get_property simulation.status]
-    if {$simulation_status == "PASSED"} {
+    # Note: `get_property simulation.status` is not typically used; check simulation logs instead
+    set simulation_status [lindex [exec tail -n 10 $log_file] 0]
+    if {[string match "*PASSED*" $simulation_status]} {
         puts "Simulation for testbench: $tb_name passed."
     } else {
         puts "Simulation for testbench: $tb_name failed. Check the log file for details: $log_file"
