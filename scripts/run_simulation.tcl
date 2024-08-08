@@ -55,12 +55,12 @@ if {[llength $testbenches] == 0} {
 }
 
 # Define Vivado simulation command
-proc run_vivado_simulation {tb log_fd vivadoPath project_dir xml_fd} {
+proc run_vivado_simulation {tb log_fd vivadoPath xml_fd} {
     set tb_name [file rootname [file tail $tb]]
     puts $log_fd "Launching simulation for testbench: $tb_name..."
 
     # Create the Vivado command for simulation
-    set cmd "cd $project_dir && $vivadoPath/vivado.bat -mode batch -source $tb"
+    set cmd "$vivadoPath/vivado.bat -mode batch -source $tb"
 
     # Run simulation and capture output
     set result [catch {
@@ -68,14 +68,8 @@ proc run_vivado_simulation {tb log_fd vivadoPath project_dir xml_fd} {
         return 0
     } err_msg]
 
-    # If catch is successful but output is not set, handle this
-    if {$result == 0} {
-        # Check if output is empty
-        if {[string length $output] == 0} {
-            puts $log_fd "Warning: No output captured for testbench $tb_name. Error Message: $err_msg"
-            set output "No output captured. Error Message: $err_msg"
-        }
-    } else {
+    # Handle error if command fails
+    if {$result != 0} {
         set output "Error running command: $err_msg"
     }
 
@@ -95,7 +89,7 @@ proc run_vivado_simulation {tb log_fd vivadoPath project_dir xml_fd} {
 
 # Launch simulations for each testbench
 foreach tb $testbenches {
-    run_vivado_simulation $tb $log_fd $vivadoPath $project_dir $xml_fd
+    run_vivado_simulation $tb $log_fd $vivadoPath $xml_fd
 }
 
 # Close XML results file
