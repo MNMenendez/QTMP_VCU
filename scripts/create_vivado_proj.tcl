@@ -21,12 +21,6 @@ cd $proj_folder
 create_project ${_xil_proj_name_} -part xc7z020clg484-1 -force
 set obj [current_project]
 
-# Ensure project files are writable
-file attributes $proj_file -permissions writable
-foreach file [glob -nocomplain -directory $proj_folder *] {
-    file attributes $file -permissions writable
-}
-
 # Set project properties
 set_property -name "default_lib" -value "xil_defaultlib" -objects $obj
 set_property -name "enable_vhdl_2008" -value "1" -objects $obj
