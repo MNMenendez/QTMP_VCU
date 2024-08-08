@@ -21,15 +21,21 @@ if {[file exists $proj_file]} {
     }
 }
 
-# Create the project
+# Create the project in a writable directory
+cd $origin_dir
 create_project ${_xil_proj_name_} -part xc7z020clg484-1 -force
 set obj [current_project]
+
+# Ensure project files are writable
+file attributes $proj_file -permissions writable
+
+# Set project properties
 set_property -name "default_lib" -value "xil_defaultlib" -objects $obj
 set_property -name "enable_vhdl_2008" -value "1" -objects $obj
 puts "Project '${_xil_proj_name_}' created successfully."
 
 # Define source directories
-set sources_1_dir "${origin_dir}/QTMP_VCU.gen/sources_1"
+set sources_1_dir "${origin_dir}/${_xil_proj_name_}.gen/sources_1"
 if {[file isdirectory $sources_1_dir] == 0} {
     file mkdir $sources_1_dir
     puts "Created sources_1 directory at '$sources_1_dir'."
@@ -74,3 +80,5 @@ foreach file $files {
         puts "File '$file' from testbenches already exists in the project, skipping addition."
     }
 }
+
+puts "Project setup completed."
