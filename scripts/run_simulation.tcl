@@ -1,4 +1,5 @@
 # Define directories and files
+set vivadoPath "C:/Xilinx/Vivado/2024.1/bin"
 set testbench_dir "C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP/QTMP_VCU/QTMP_VCU.gen/testbenches"
 set project_dir "C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP/QTMP_VCU"
 set simulation_log "$project_dir/simulation.log"
@@ -42,14 +43,14 @@ if {[llength $testbenches] == 0} {
 }
 
 # Define Vivado simulation command
-proc run_vivado_simulation {tb log_fd} {
+proc run_vivado_simulation {tb log_fd vivadoPath} {
     set tb_name [file rootname [file tail $tb]]
     puts $log_fd "Launching simulation for testbench: $tb_name..."
     
     # Run simulation and capture output
     set result [catch {
         # Use Vivado command to run simulation
-        set cmd "vivado -mode batch -source $tb"
+        set cmd "$vivadoPath/vivado.bat -mode batch -source $tb"
         set output [exec $cmd]
         puts $log_fd "Simulation output: $output"
         return 0
@@ -65,7 +66,7 @@ proc run_vivado_simulation {tb log_fd} {
 
 # Launch simulations for each testbench
 foreach tb $testbenches {
-    run_vivado_simulation $tb $log_fd
+    run_vivado_simulation $tb $log_fd $vivadoPath
 }
 
 # Log the contents of the testbench directory after simulation
