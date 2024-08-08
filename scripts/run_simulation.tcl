@@ -3,6 +3,7 @@ set vivadoPath "C:/Xilinx/Vivado/2024.1/bin"
 set testbench_dir "C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP/QTMP_VCU/QTMP_VCU.gen/testbenches"
 set project_dir "C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP/QTMP_VCU"
 set simulation_log "$project_dir/simulation.log"
+set results_xml "$project_dir/simulation_results.xml"
 
 # Function to log directory contents
 proc log_directory_contents {log_fd dir} {
@@ -17,6 +18,15 @@ if {[file exists $simulation_log]} {
     file delete $simulation_log
 }
 puts "Cleared existing simulation log or created a new one."
+
+# Create/clear XML results file
+if {[file exists $results_xml]} {
+    file delete $results_xml
+}
+file mkdir [file dirname $results_xml]
+set xml_fd [open $results_xml "w"]
+puts $xml_fd "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+puts $xml_fd "<testsuites>"
 
 # Open log file and start logging
 set log_fd [open $simulation_log "a"]
@@ -39,17 +49,18 @@ set testbenches [glob -nocomplain -directory $testbench_dir *.vhd]
 if {[llength $testbenches] == 0} {
     puts $log_fd "ERROR: No testbench files found in '$testbench_dir'."
     close $log_fd
+    puts $xml_fd "</testsuites>"
+    close $xml_fd
     exit
 }
 
 # Define Vivado simulation command
-proc run_vivado_simulation {tb log_fd vivadoPath project_dir} {
+proc run_vivado_simulation {tb log_fd vivadoPath project_dir xml_fd} {
     set tb_name [file rootname [file tail $tb]]
     puts $log_fd "Launching simulation for testbench: $tb_name..."
-    
-    # Create the command to run Vivado in batch mode with simulation
-    set cmd "cd $project_dir && $vivadoPath/vivado.bat -mode batch -source [list \
-        -c \"$tb\" -b \"$project_dir\" -log \"$log_fd\" ]"
+
+    # Create the Vivado command for simulation
+    set cmd "cd $project_dir && $vivadoPath/vivado.bat -mode batch -source $tb"
 
     # Run simulation and capture output
     set result [catch {
@@ -58,22 +69,32 @@ proc run_vivado_simulation {tb log_fd vivadoPath project_dir} {
         return 0
     } err_msg]
 
-    # Record result in log file
-    if {$result == 0} {
-        puts $log_fd "Simulation for $tb_name completed successfully."
-    } else {
-        puts $log_fd "ERROR: Simulation for $tb_name failed. Error: $err_msg"
+    # Determine result and write to XML
+    set status "failed"
+    if {[string match "*finished successfully*" $output]} {
+        set status "passed"
+    } elseif {[string match "*skipped*" $output]} {
+        set status "skipped"
     }
+
+    puts $log_fd "Simulation for $tb_name $status."
+    puts $xml_fd "<testcase name=\"$tb_name\" status=\"$status\">"
+    puts $xml_fd "    <system-out><![CDATA[$output]]></system-out>"
+    puts $xml_fd "</testcase>"
 }
 
 # Launch simulations for each testbench
 foreach tb $testbenches {
-    run_vivado_simulation $tb $log_fd $vivadoPath $project_dir
+    run_vivado_simulation $tb $log_fd $vivadoPath $project_dir $xml_fd
 }
+
+# Close XML results file
+puts $xml_fd "</testsuites>"
+close $xml_fd
 
 # Log the contents of the testbench directory after simulation
 log_directory_contents $log_fd $testbench_dir
 
 # Close the log file
 close $log_fd
-puts "All simulations launched."
+puts "All simulations launched and results recorded."
