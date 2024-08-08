@@ -37,20 +37,23 @@ puts "Project saved to '$project_file'."
 if {[file exists $simulation_log]} {
     file delete $simulation_log
 }
+puts "Cleared existing simulation log or created a new one."
 
 # Open the simulation log for writing
 set log_fd [open $simulation_log "a"]
+puts $log_fd "Simulation Log Started at [clock seconds]"
 
 # Launch simulations for each testbench file
 foreach tb [glob -nocomplain -directory $testbench_dir *.vhd] {
     set tb_name [file rootname [file tail $tb]]
     puts $log_fd "Launching simulation for testbench: $tb_name..."
 
-    # Redirect output to the log file
+    # Run simulation and capture output
     set result [catch {
         launch_simulation -simset sim_1
     } err_msg]
     
+    # Record result in log file
     if {$result == 0} {
         puts $log_fd "Simulation for $tb_name completed successfully."
     } else {
@@ -60,5 +63,4 @@ foreach tb [glob -nocomplain -directory $testbench_dir *.vhd] {
 
 # Close the log file
 close $log_fd
-
 puts "All simulations launched."
