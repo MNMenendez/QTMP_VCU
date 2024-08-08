@@ -49,10 +49,19 @@ foreach tb $testbenches {
     
     # Launch simulation
     launch_simulation -simset $sim_fileset -snapshot $snapshot_name
-    
+
     # Wait for simulation to complete
     wait_on_simulation
     
+    # Check the simulation results
+    set simulation_status [get_property simulation.status]
+    if {$simulation_status == "PASSED"} {
+        puts "Simulation for testbench: $tb_name passed."
+    } else {
+        puts "Simulation for testbench: $tb_name failed. Check the log file for details: $log_file"
+        exit 1
+    }
+
     # Generate the test report
     puts "Generating test report for testbench: $tb_name..."
     set report_file [file join $proj_folder "${tb_name}_report.txt"]
