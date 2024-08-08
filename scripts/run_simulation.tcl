@@ -41,6 +41,13 @@ if {[llength $testbenches] == 0} {
     exit
 }
 
+# Check if the simulation command is available
+if {[catch {exec which launch_simulation} result]} {
+    puts $log_fd "ERROR: 'launch_simulation' command not found. Please ensure it is in your PATH."
+    close $log_fd
+    exit
+}
+
 # Launch simulations for each testbench
 foreach tb $testbenches {
     set tb_name [file rootname [file tail $tb]]
