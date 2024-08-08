@@ -1,33 +1,15 @@
 # Define directories and files
-set sources_1_dir "C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP/QTMP_VCU/QTMP_VCU.gen/sources_1"
 set testbench_dir "C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP/QTMP_VCU/QTMP_VCU.gen/testbenches"
 set project_dir "C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP/QTMP_VCU"
-set project_file "$project_dir/QTMP_VCU.xpr"
 set simulation_log "$project_dir/simulation.log"
 
-# Add design files
-set source_files [glob -nocomplain -directory $sources_1_dir *.vhd]
-if {[llength $source_files] > 0} {
-    add_files -fileset sources_1 $source_files
-    puts "Added design files from '$sources_1_dir' to sources_1."
-} else {
-    puts "ERROR: No VHD files found in '$sources_1_dir'."
+# Function to log directory contents
+proc log_directory_contents {log_fd dir} {
+    puts $log_fd "Contents of directory '$dir':"
+    foreach file [glob -nocomplain -directory $dir *] {
+        puts $log_fd [file tail $file]
+    }
 }
-
-# Add testbench files
-set testbench_files [glob -nocomplain -directory $testbench_dir *.vhd]
-if {[llength $testbench_files] > 0} {
-    add_files -fileset sim_1 $testbench_files
-    puts "Added testbench files from '$testbench_dir' to sim_1."
-} else {
-    puts "ERROR: No VHD files found in '$testbench_dir'."
-}
-
-# Update compile order and save project
-update_compile_order -fileset sources_1
-set_property top hcmt_cpld_top [get_filesets sim_1]
-save_project_as -force $project_file
-puts "Project saved to '$project_file'."
 
 # Clear existing simulation log or create a new one
 if {[file exists $simulation_log]} {
@@ -47,10 +29,7 @@ proc get_current_time {} {
 puts $log_fd "Simulation Log Started at [get_current_time]"
 
 # Log the contents of the testbench directory before simulation
-puts $log_fd "Contents of testbench directory before simulation:"
-foreach file [glob -nocomplain -directory $testbench_dir *] {
-    puts $log_fd [file tail $file]
-}
+log_directory_contents $log_fd $testbench_dir
 
 # Get the list of testbenches
 set testbenches [glob -nocomplain -directory $testbench_dir *.vhd]
@@ -85,10 +64,7 @@ foreach tb $testbenches {
 }
 
 # Log the contents of the testbench directory after simulation
-puts $log_fd "Contents of testbench directory after simulation:"
-foreach file [glob -nocomplain -directory $testbench_dir *] {
-    puts $log_fd [file tail $file]
-}
+log_directory_contents $log_fd $testbench_dir
 
 # Close the log file
 close $log_fd
