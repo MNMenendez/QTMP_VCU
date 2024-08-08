@@ -68,14 +68,23 @@ proc run_vivado_simulation {tb log_fd vivadoPath project_dir xml_fd} {
         return 0
     } err_msg]
 
+    # If catch is successful but output is not set, handle this
+    if {$result == 0} {
+        # Check if output is empty
+        if {[string length $output] == 0} {
+            puts $log_fd "Warning: No output captured for testbench $tb_name. Error Message: $err_msg"
+            set output "No output captured. Error Message: $err_msg"
+        }
+    } else {
+        set output "Error running command: $err_msg"
+    }
+
     # Determine result and write to XML
     set status "failed"
     if {[string match "*finished successfully*" $output]} {
         set status "passed"
     } elseif {[string match "*skipped*" $output]} {
         set status "skipped"
-    } else {
-        set output "$err_msg"
     }
 
     puts $log_fd "Simulation for $tb_name $status."
