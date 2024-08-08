@@ -66,7 +66,8 @@ if { $::argc > 0 } {
 set orig_proj_dir "[file normalize "$origin_dir/"]"
 
 # Create project
-create_project ${_xil_proj_name_} -part xc7z020clg484-1
+create_project ${_xil_proj_name_} -part xc7z020clg484-1 -force
+
 
 # Check if project creation was successful
 if {[catch {get_property directory [current_project]} proj_dir]} {
