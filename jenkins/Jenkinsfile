@@ -8,7 +8,7 @@ pipeline {
         CONVERT_SCRIPT = 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\convert_to_junit_xml.py'
         VIVADO_PATH = 'C:\\Xilinx\\Vivado\\2024.1\\bin'
         SCRIPT_PATH = 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\scripts'
-        LOGS_DIR = 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\vivado\\simulation_logs' // Adjust path as needed
+        SIM_LOG_FILE = 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\QTMP_VCU.sim\\sim_1\\behav\\xsim\\simulate.log'
     }
 
     stages {
@@ -67,9 +67,7 @@ pipeline {
             steps {
                 script {
                     echo "Converting simulation results to JUnit XML..."
-                    
-                    // Ensure the log directory is correct
-                    bat "python ${env.CONVERT_SCRIPT} ${env.LOGS_DIR}\\simulate.log ${env.TEST_RESULTS_XML}"
+                    bat "python ${env.CONVERT_SCRIPT} ${env.SIM_LOG_FILE} ${env.TEST_RESULTS_XML}"
 
                     echo "Archiving test results..."
                     archiveArtifacts artifacts: "${env.TEST_RESULTS_XML}", allowEmptyArchive: true
