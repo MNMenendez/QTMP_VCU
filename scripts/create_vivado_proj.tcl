@@ -35,12 +35,24 @@ if {[file isdirectory $sources_1_dir] == 0} {
     puts "Created sources_1 directory at '$sources_1_dir'."
 }
 
+# Helper procedure to check if a file is already in the project
+proc is_file_in_project {filename} {
+    # Get a list of all files in the project
+    set all_files [get_files]
+    foreach file $all_files {
+        if {[file tail $file] eq $filename} {
+            return 1
+        }
+    }
+    return 0
+}
+
 # Add files to sources_1
 set source_dir "${origin_dir}/source"
 set files [glob -nocomplain -directory $source_dir *.vhd]
 foreach file $files {
     set filename [file tail $file]
-    if {[llength [get_files -file $filename]] == 0} {
+    if {[is_file_in_project $filename] == 0} {
         file copy -force $file [file join $sources_1_dir $filename]
         add_files -norecurse [file join $sources_1_dir $filename]
         puts "Added VHD file '$file' to sources_1."
@@ -54,7 +66,7 @@ set testbench_dir "${origin_dir}/testbenches"
 set files [glob -nocomplain -directory $testbench_dir *.vhd]
 foreach file $files {
     set filename [file tail $file]
-    if {[llength [get_files -file $filename]] == 0} {
+    if {[is_file_in_project $filename] == 0} {
         file copy -force $file [file join $sources_1_dir $filename]
         add_files -norecurse [file join $sources_1_dir $filename]
         puts "Added VHD file '$file' from testbenches to sources_1."
