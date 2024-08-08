@@ -18,11 +18,17 @@ if {[llength [get_filesets $sim_fileset]] == 0} {
 # Set the top module for simulation
 set_property top hcmt_cpld_top [get_filesets $sim_fileset]
 
-# Configure simulation settings to generate detailed logs
-# (Use verbose flags and additional options as needed)
-launch_simulation -simset $sim_fileset -verbose -log "C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP/simulation.log"
+# Configure verbose simulation settings
+# (Add detailed options as needed)
+launch_simulation -simset $sim_fileset
 
-# Run the simulation with specific duration
+# Run the simulation for a specified duration
 run 1000ns
 
-# Optionally, you can specify further configuration or additional scripts here
+# Optionally, you can capture simulation output
+# Redirecting stdout and stderr to log files can be achieved via shell commands.
+# For Windows:
+exec cmd /c "type C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP/QTMP_VCU.sim/sim_1/behav/xsim/sim.log > C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP/simulation.log"
+
+# For Unix/Linux:
+# exec sh -c "cat C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP/QTMP_VCU.sim/sim_1/behav/xsim/sim.log > C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP/simulation.log"
