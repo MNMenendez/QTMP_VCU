@@ -17,26 +17,6 @@ if {[file isdirectory $testbench_dir] == 0} {
     puts "Testbenches directory already exists at '$testbench_dir'."
 }
 
-# Copy files from source to target directories
-# Correcting the xcopy command syntax
-set xcopy_cmd "xcopy /s /e /y \"C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP/source/*\" \"$sources_1_dir\""
-puts "Executing: $xcopy_cmd"
-set result [exec $xcopy_cmd]
-if {[llength $result] > 0} {
-    puts "xcopy command output: $result"
-} else {
-    puts "xcopy command executed successfully."
-}
-
-set xcopy_testbench_cmd "xcopy /s /e /y \"C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP/testbenches/*\" \"$testbench_dir\""
-puts "Executing: $xcopy_testbench_cmd"
-set result_testbench [exec $xcopy_testbench_cmd]
-if {[llength $result_testbench] > 0} {
-    puts "xcopy command output: $result_testbench"
-} else {
-    puts "xcopy command executed successfully."
-}
-
 # Add design files from sources_1
 set source_files [glob -nocomplain -directory $sources_1_dir *.vhd]
 if {[llength $source_files] > 0} {
@@ -62,7 +42,7 @@ update_compile_order -fileset sources_1
 set_property top hcmt_cpld_top [get_filesets sim_1]
 
 # Launch simulation
-foreach tb $testbenches {
+foreach tb [glob -nocomplain -directory $testbench_dir *.vhd] {
     set tb_name [file rootname [file tail $tb]]
     puts "Launching simulation for testbench: $tb_name..."
 
