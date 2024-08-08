@@ -45,11 +45,34 @@ if {[file isdirectory $testbench_dir] == 0} {
     puts "Testbenches directory already exists at '$testbench_dir'."
 }
 
-# Check files in sources_1_dir
-set source_files [glob -nocomplain -directory $sources_1_dir *.vhd]
-puts "Files found in sources_1_dir: $source_files"
+# Define source and testbench directories
+set source_dir "${origin_dir}/source"
+set testbench_source_dir "${origin_dir}/testbenches"
+
+# Copy design files from source directory to sources_1
+set source_files [glob -nocomplain -directory $source_dir *.vhd]
+if {[llength $source_files] > 0} {
+    foreach file $source_files {
+        file copy -force $file [file join $sources_1_dir [file tail $file]]
+    }
+    puts "Copied design files from '$source_dir' to '$sources_1_dir'."
+} else {
+    puts "ERROR: No VHD files found in '$source_dir'."
+}
+
+# Copy testbench files from testbench directory to testbenches
+set testbench_files [glob -nocomplain -directory $testbench_source_dir *.vhd]
+if {[llength $testbench_files] > 0} {
+    foreach file $testbench_files {
+        file copy -force $file [file join $testbench_dir [file tail $file]]
+    }
+    puts "Copied testbench files from '$testbench_source_dir' to '$testbench_dir'."
+} else {
+    puts "ERROR: No VHD files found in '$testbench_source_dir'."
+}
 
 # Add design files to sources_1
+set source_files [glob -nocomplain -directory $sources_1_dir *.vhd]
 if {[llength $source_files] > 0} {
     add_files -fileset sources_1 $source_files
     puts "Added design files from '$sources_1_dir' to sources_1."
@@ -57,11 +80,8 @@ if {[llength $source_files] > 0} {
     puts "ERROR: No VHD files found in '$sources_1_dir'."
 }
 
-# Check files in testbench_dir
-set testbench_files [glob -nocomplain -directory $testbench_dir *.vhd]
-puts "Files found in testbench_dir: $testbench_files"
-
 # Add testbench files to sim_1
+set testbench_files [glob -nocomplain -directory $testbench_dir *.vhd]
 if {[llength $testbench_files] > 0} {
     add_files -fileset sim_1 $testbench_files
     puts "Added testbench files from '$testbench_dir' to sim_1."
