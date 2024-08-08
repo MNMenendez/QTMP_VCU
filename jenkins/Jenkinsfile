@@ -70,7 +70,7 @@ pipeline {
                     echo "Converting simulation results to JUnit XML..."
                     
                     // Ensure the log directory is correct
-                    bat "python ${env.CONVERT_SCRIPT} ${env.LOGS_DIR}\\simulation.log ${env.TEST_RESULTS_XML}"
+                    bat "python ${env.CONVERT_SCRIPT} ${env.LOGS_DIR}\\simulate.log ${env.TEST_RESULTS_XML}"
 
                     echo "Archiving test results..."
                     archiveArtifacts artifacts: "${env.TEST_RESULTS_XML}", allowEmptyArchive: true
