@@ -1,8 +1,9 @@
-# Path to the Vivado project file
+# Define the project file path
 set proj_file "C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP/QTMP_VCU.xpr"
 
 # Check if the project file exists
 if {[file exists $proj_file]} {
+    # Open the project
     open_project $proj_file
     puts "Opened project: $proj_file"
 } else {
@@ -16,7 +17,7 @@ if {[catch {file writable $proj_file} writable_status] && !$writable_status} {
     exit 1
 }
 
-# Define simulation fileset
+# Define the simulation fileset name
 set sim_fileset "sim_1"
 
 # Check if the simulation fileset exists
@@ -25,7 +26,12 @@ if {[llength [get_filesets $sim_fileset]] == 0} {
     exit 1
 }
 
-# Set the top module for the simulation
+# Set the top module for simulation
 set_property top hcmt_cpld_top [get_filesets $sim_fileset]
 
-# Additional simulation setup or commands can be added here
+# Run the simulation
+launch_simulation -simset $sim_fileset
+puts "Simulation launched successfully."
+
+# Exit Vivado
+exit
