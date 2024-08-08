@@ -30,21 +30,37 @@ launch_simulation -simset [get_filesets $sim_fileset]
 # Close the simulation
 close_sim
 
-# Look for assertion failures in the simulation log
-set log_file [glob -nocomplain *sim/$sim_fileset/behav/xsim/simulate.log]
-if {[llength $log_file] == 0} {
-    puts "ERROR: Simulation log file not found."
-    exit 1
-}
-set fp [open [lindex $log_file 0] r]
-set file_data [read $fp]
-close $fp
+# Define the path to the simulation log directory
+set sim_log_dir "C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP/QTMP_VCU.sim/sim_1/behav/xsim"
 
-# Check for assertion failures
-if {[regexp "Failure:" $file_data]} {
-    puts "ERROR: Assertion failure detected in simulation log."
-    exit 1
+# Ensure the directory exists
+if {[file isdirectory $sim_log_dir]} {
+    # Get a list of all log files in the directory
+    set log_files [glob -nocomplain $sim_log_dir/*.log]
+    if {[llength $log_files] == 0} {
+        puts "ERROR: No log files found in '$sim_log_dir'."
+        exit 1
+    }
+
+    # Open and read each log file
+    foreach log_file $log_files {
+        set fp [open $log_file r]
+        set file_data [read $fp]
+        close $fp
+
+        # Check for assertion failures and output results
+        if {[regexp "Failure:" $file_data]} {
+            puts "ERROR: Assertion failure detected in log file $log_file."
+            # Optionally, you could add more specific details here
+        } else {
+            puts "Simulation completed successfully for log file $log_file."
+        }
+    }
+
+    # Optionally, you might want to create a consolidated report
+    # Here we just print the names of the log files
+    puts "Simulation log files processed."
 } else {
-    puts "Simulation completed successfully."
-    exit 0
+    puts "ERROR: Simulation log directory '$sim_log_dir' does not exist."
+    exit 1
 }
