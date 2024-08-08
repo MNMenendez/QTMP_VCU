@@ -39,6 +39,11 @@ puts "Cleared existing simulation log or created a new one."
 set log_fd [open $simulation_log "a"]
 puts $log_fd "Simulation Log Started at [clock seconds]"
 
+# Debug: Check directory contents before simulation
+puts $log_fd "Contents of testbench directory before simulation:"
+set dir_contents [exec dir $testbench_dir]
+puts $log_fd $dir_contents
+
 # Get the list of testbenches
 set testbenches [glob -nocomplain -directory $testbench_dir *.vhd]
 
@@ -70,6 +75,11 @@ foreach tb $testbenches {
         puts $log_fd "ERROR: Simulation for $tb_name failed. Error: $err_msg"
     }
 }
+
+# Debug: Check directory contents after simulation
+puts $log_fd "Contents of testbench directory after simulation:"
+set dir_contents [exec dir $testbench_dir]
+puts $log_fd $dir_contents
 
 # Close the log file
 close $log_fd
