@@ -102,4 +102,10 @@ if {[string equal [get_filesets -quiet sim_1] ""]} {
 set obj [get_filesets sim_1]
 puts "Simulation fileset 'sim_1' created."
 
-puts "All files added and properties set successfully."
+# Set GCC path for simulation
+set_property -name "simulator" -value "xsim" -objects [current_project]
+# Specify the GCC path
+set_property -name "simulator_options" -value "GCC_PATH=C:/MinGW/bin" -objects [current_project]
+
+# Launch simulation
+launch_simulation -simset sim_1
