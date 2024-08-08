@@ -2,7 +2,6 @@ pipeline {
     agent any
 
     environment {
-        MODELSIM_HOME = 'C:\\modeltech64_10.6d\\win64'
         GIT_PATH = 'C:\\Users\\martin\\AppData\\Local\\Programs\\Git\\bin\\git.exe'
         TOP_LEVEL_ENTITY = 'hcmt_cpld_top'
         TEST_RESULTS_XML = 'test_results.xml'
