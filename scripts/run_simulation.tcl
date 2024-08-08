@@ -2,7 +2,7 @@
 set sources_1_dir "C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP/QTMP_VCU/QTMP_VCU.gen/sources_1"
 set testbench_dir "C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP/QTMP_VCU/QTMP_VCU.gen/testbenches"
 set project_dir "C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP/QTMP_VCU"
-set project_file "$project_dir/ART_QTMP.xpr"
+set project_file "$project_dir/QTMP_VCU.xpr"
 set simulation_log "$project_dir/simulation.log"
 
 # Add design files from sources_1
@@ -47,11 +47,11 @@ foreach tb [glob -nocomplain -directory $testbench_dir *.vhd] {
     set tb_name [file rootname [file tail $tb]]
     puts $log_fd "Launching simulation for testbench: $tb_name..."
 
-    # Set the simulation fileset
-    launch_simulation -simset sim_1
-
-    # Check the simulation result
-    set result [catch {launch_simulation -simset sim_1} err_msg]
+    # Redirect output to the log file
+    set result [catch {
+        launch_simulation -simset sim_1
+    } err_msg]
+    
     if {$result == 0} {
         puts $log_fd "Simulation for $tb_name completed successfully."
     } else {
