@@ -39,29 +39,27 @@ if {[file isdirectory $sources_1_dir] == 0} {
 set obj [get_filesets sources_1]
 set source_dir "${origin_dir}/source"
 set files [glob -nocomplain -directory $source_dir *.vhd]
+
+# Add files to sources_1 if they are not already present
 foreach file $files {
-    if {[catch {file copy -force $file [file join $sources_1_dir [file tail $file]]} err]} {
-        puts "WARNING: Failed to copy file '$file'. Error: $err"
+    if {[llength [get_files -fileset $obj -file [file tail $file]]] == 0} {
+        file copy -force $file [file join $sources_1_dir [file tail $file]]
+        add_files -norecurse -fileset $obj [file join $sources_1_dir [file tail $file]]
+        puts "Added VHD file '$file' to sources_1."
+    } else {
+        puts "File '$file' already exists in sources_1, skipping addition."
     }
-}
-if {[llength [get_fileset_files -fileset $obj]] == 0} {
-    add_files -norecurse -fileset $obj [glob -nocomplain -directory $sources_1_dir *.vhd]
-    puts "Added VHD files from source directory to sources_1."
-} else {
-    puts "Files already exist in sources_1, skipping addition."
 }
 
 # Add testbench files similarly
 set testbench_dir "${origin_dir}/testbenches"
 set files [glob -nocomplain -directory $testbench_dir *.vhd]
 foreach file $files {
-    if {[catch {file copy -force $file [file join $sources_1_dir [file tail $file]]} err]} {
-        puts "WARNING: Failed to copy file '$file'. Error: $err"
+    if {[llength [get_files -fileset $obj -file [file tail $file]]] == 0} {
+        file copy -force $file [file join $sources_1_dir [file tail $file]]
+        add_files -norecurse -fileset $obj [file join $sources_1_dir [file tail $file]]
+        puts "Added VHD file '$file' from testbenches to sources_1."
+    } else {
+        puts "File '$file' from testbenches already exists in sources_1, skipping addition."
     }
-}
-if {[llength [get_fileset_files -fileset $obj]] == 0} {
-    add_files -norecurse -fileset $obj [glob -nocomplain -directory $sources_1_dir *.vhd]
-    puts "Added VHD files from testbenches directory to sources_1."
-} else {
-    puts "Files already exist in sources_1, skipping addition."
 }
