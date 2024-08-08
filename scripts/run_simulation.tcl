@@ -1,3 +1,5 @@
+source {C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP/scripts/run_simulation.tcl}
+
 # Define directories and files
 set sources_1_dir "C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP/QTMP_VCU/QTMP_VCU.gen/sources_1"
 set testbench_dir "C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP/QTMP_VCU/QTMP_VCU.gen/testbenches"
@@ -39,15 +41,28 @@ puts "Cleared existing simulation log or created a new one."
 set log_fd [open $simulation_log "a"]
 puts $log_fd "Simulation Log Started at [clock seconds]"
 
+# Get the list of testbenches
+set testbenches [glob -nocomplain -directory $testbench_dir *.vhd]
+
+# Check if any testbenches are found
+if {[llength $testbenches] == 0} {
+    puts $log_fd "ERROR: No testbench files found in '$testbench_dir'."
+    close $log_fd
+    exit
+}
+
 # Launch simulations for each testbench
-foreach tb [glob -nocomplain -directory $testbench_dir *.vhd] {
+foreach tb $testbenches {
     set tb_name [file rootname [file tail $tb]]
     puts $log_fd "Launching simulation for testbench: $tb_name..."
 
     # Run simulation and capture output
     set result [catch {
-        # Explicitly specify the simulation command and testbench file if necessary
-        launch_simulation -simset sim_1 -testbench $tb
+        # Explicitly specify the simulation command
+        set cmd "launch_simulation -simset sim_1"
+        set output [exec $cmd]
+        puts $log_fd "Simulation output: $output"
+        return 0
     } err_msg]
 
     # Record result in log file
