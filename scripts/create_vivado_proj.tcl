@@ -62,10 +62,10 @@ if { $::argc > 0 } {
   }
 }
 
-# Set the directory path for the original project from where this script was exported
-set orig_proj_dir "[file normalize "$origin_dir/"]"
+# Normalize the origin directory path
+set orig_proj_dir [file normalize "$origin_dir/"]
 
-# Create project
+# Create the Vivado project
 create_project ${_xil_proj_name_} -part xc7z020clg484-1
 
 # Check if project creation was successful
@@ -76,22 +76,19 @@ if {[catch {get_property directory [current_project]} proj_dir]} {
 
 # Set project properties
 set obj [current_project]
-
-# Ensure only one instance of each property is set
 set_property -name "default_lib" -value "xil_defaultlib" -objects $obj
 set_property -name "enable_vhdl_2008" -value "1" -objects $obj
 puts "Project '${_xil_proj_name_}' created successfully."
 
-# Create 'sources_1' fileset (if not found)
-if {[string equal [get_filesets -quiet sources_1] ""]} {
+# Create 'sources_1' fileset if it does not exist
+if {[llength [get_filesets sources_1]] == 0} {
   create_fileset -srcset sources_1
 }
-
-# Set 'sources_1' fileset object
 set obj [get_filesets sources_1]
 
 # Add all VHD files from 'source' folder
-set source_dir "${origin_dir}/source"
+set source_dir [file normalize "${orig_proj_dir}/source"]
+puts "Source directory: $source_dir"  ;# Debug statement
 set files [glob -nocomplain -directory $source_dir *.vhd]
 if {[llength $files] == 0} {
     puts "WARNING: No VHD files found in the source directory '$source_dir'."
@@ -114,25 +111,22 @@ foreach file $files {
     }
 }
 
-# Create 'constrs_1' fileset (if not found)
-if {[string equal [get_filesets -quiet constrs_1] ""]} {
+# Create 'constrs_1' fileset if it does not exist
+if {[llength [get_filesets constrs_1]] == 0} {
   create_fileset -constrset constrs_1
 }
-
-# Set 'constrs_1' fileset object
 set obj [get_filesets constrs_1]
 puts "Constraints fileset 'constrs_1' created."
 
-# Create 'sim_1' fileset (if not found)
-if {[string equal [get_filesets -quiet sim_1] ""]} {
+# Create 'sim_1' fileset if it does not exist
+if {[llength [get_filesets sim_1]] == 0} {
   create_fileset -simset sim_1
 }
-
-# Set 'sim_1' fileset object
 set obj [get_filesets sim_1]
 
 # Add all VHD files from 'testbenches' folder
-set testbench_dir "${origin_dir}/testbenches"
+set testbench_dir [file normalize "${orig_proj_dir}/testbenches"]
+puts "Testbench directory: $testbench_dir"  ;# Debug statement
 set files [glob -nocomplain -directory $testbench_dir *.vhd]
 if {[llength $files] == 0} {
     puts "WARNING: No VHD files found in the testbenches directory '$testbench_dir'."
