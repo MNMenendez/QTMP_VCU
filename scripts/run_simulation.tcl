@@ -43,14 +43,28 @@ if {[llength $testbenches] == 0} {
 }
 
 # Define Vivado simulation command
-proc run_vivado_simulation {tb log_fd vivadoPath} {
+proc run_vivado_simulation {tb log_fd vivadoPath project_dir} {
     set tb_name [file rootname [file tail $tb]]
     puts $log_fd "Launching simulation for testbench: $tb_name..."
     
+    # Create a temporary Tcl script to run the simulation
+    set temp_script "temp_sim_script.tcl"
+    set script_fd [open $temp_script "w"]
+    
+    # Write commands to the temporary Tcl script
+    puts $script_fd "open_project $project_dir"
+    puts $script_fd "set_property top [file rootname [file tail $tb]] [current_fileset]"
+    puts $script_fd "launch_simulation -simset [get_filesets simulation_1]"
+    puts $script_fd "run -all"
+    puts $script_fd "close_project"
+    close $script_fd
+
+    # Construct the Vivado simulation command
+    set cmd "cd $project_dir && $vivadoPath/vivado.bat -mode batch -source $temp_script"
+    puts $log_fd "Running command: $cmd"
+    
     # Run simulation and capture output
     set result [catch {
-        # Use Vivado command to run simulation
-        set cmd "$vivadoPath/vivado.bat -mode batch -source $tb"
         set output [exec $cmd]
         puts $log_fd "Simulation output: $output"
         return 0
@@ -62,11 +76,14 @@ proc run_vivado_simulation {tb log_fd vivadoPath} {
     } else {
         puts $log_fd "ERROR: Simulation for $tb_name failed. Error: $err_msg"
     }
+
+    # Clean up temporary Tcl script
+    file delete $temp_script
 }
 
 # Launch simulations for each testbench
 foreach tb $testbenches {
-    run_vivado_simulation $tb $log_fd $vivadoPath
+    run_vivado_simulation $tb $log_fd $vivadoPath $project_dir
 }
 
 # Log the contents of the testbench directory after simulation
