@@ -38,74 +38,54 @@ set_property -name "default_lib" -value "xil_defaultlib" -objects $obj
 set_property -name "enable_vhdl_2008" -value "1" -objects $obj
 puts "Project '${_xil_proj_name_}' created successfully."
 
-# Define paths for sources_1
-set sources_dir "${origin_dir}/${_xil_proj_name_}.gen/sources_1"
-set source_dir "${origin_dir}/source"
-set testbench_dir "${origin_dir}/testbenches"
-
-# Create the sources_1 directory if it does not exist
-if {![file exists $sources_dir]} {
-    file mkdir $sources_dir
-    puts "Created directory: $sources_dir"
+# Create and manage filesets
+# Check and create sources_1 directory if it does not exist
+set sources_1_dir "${origin_dir}/QTMP_VCU.gen/sources_1"
+if {[file isdirectory $sources_1_dir] == 0} {
+    file mkdir $sources_1_dir
+    puts "Created sources_1 directory at '$sources_1_dir'."
 }
 
-# Ensure the sources_1 fileset exists
 if {[string equal [get_filesets -quiet sources_1] ""]} {
     create_fileset -srcset sources_1
 }
 set obj [get_filesets sources_1]
 
-# Add VHD files from the source directory to sources_1 fileset
+# Add VHD files from source directory to sources_1
+set source_dir "${origin_dir}/source"
 set files [glob -nocomplain -directory $source_dir *.vhd]
 if {[llength $files] == 0} {
     puts "WARNING: No VHD files found in the source directory '$source_dir'."
 } else {
-    # Move files to sources_1 directory
+    # Copy files to sources_1 directory before adding them
     foreach file $files {
-        set dest_file [file join $sources_dir [file tail $file]]
-        file copy -force $file $dest_file
+        file copy -force $file [file join $sources_1_dir [file tail $file]]
     }
+    add_files -norecurse -fileset $obj [glob -nocomplain -directory $sources_1_dir *.vhd]
+    puts "Added VHD files from source directory to sources_1."
 }
 
-# Add VHD files from the testbenches directory to sources_1 fileset
+# Add VHD files from testbenches directory to sources_1
+set testbench_dir "${origin_dir}/testbenches"
 set files [glob -nocomplain -directory $testbench_dir *.vhd]
 if {[llength $files] == 0} {
     puts "WARNING: No VHD files found in the testbenches directory '$testbench_dir'."
 } else {
-    # Move files to sources_1 directory
+    # Copy files to sources_1 directory before adding them
     foreach file $files {
-        set dest_file [file join $sources_dir [file tail $file]]
-        file copy -force $file $dest_file
+        file copy -force $file [file join $sources_1_dir [file tail $file]]
     }
+    add_files -norecurse -fileset $obj [glob -nocomplain -directory $sources_1_dir *.vhd]
+    puts "Added VHD files from testbenches directory to sources_1."
 }
 
-# Add all VHD files in the sources_1 directory to the sources_1 fileset
-set files [glob -nocomplain -directory $sources_dir *.vhd]
-if {[llength $files] == 0} {
-    puts "WARNING: No VHD files found in the sources_1 directory '$sources_dir'."
+# Optional: Set GCC path check (requires Vivado to be correctly set up to use this)
+# This part will only print a message since Vivado Tcl doesn't support setting GCC paths directly
+set gcc_path "C:/MinGW/bin/gcc.exe"
+if {[file exists $gcc_path]} {
+    puts "GCC found at: $gcc_path"
 } else {
-    add_files -norecurse -fileset $obj $files
-    puts "Added VHD files from source and testbenches directories to sources_1 fileset."
+    puts "WARNING: GCC not found at the specified path: $gcc_path"
 }
 
-# Ensure the constrs_1 fileset exists
-if {[string equal [get_filesets -quiet constrs_1] ""]} {
-    create_fileset -constrset constrs_1
-}
-set obj [get_filesets constrs_1]
-puts "Constraints fileset 'constrs_1' created."
-
-# Ensure the sim_1 fileset exists
-if {[string equal [get_filesets -quiet sim_1] ""]} {
-    create_fileset -simset sim_1
-}
-set obj [get_filesets sim_1]
-puts "Simulation fileset 'sim_1' created."
-
-# Set GCC path for simulation
-set_property -name "simulator" -value "xsim" -objects [current_project]
-# Specify the GCC path
-set_property -name "simulator_options" -value "GCC_PATH=C:/MinGW/bin" -objects [current_project]
-
-# Launch simulation
-launch_simulation -simset sim_1
+puts "All files added and properties set successfully."
