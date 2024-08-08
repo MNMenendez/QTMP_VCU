@@ -46,17 +46,17 @@ set_property top [lindex [get_filesets $sim_fileset] 0] [get_filesets $sim_files
 foreach tb $testbenches {
     set tb_name [file rootname [file tail $tb]]
     puts "Launching simulation for testbench: $tb_name..."
-    
+
     # Define unique names for the snapshot and log files
     set snapshot_name "${tb_name}_behav"
     set log_file [file join $proj_folder "${tb_name}_simulate.log"]
-    
+
     # Launch simulation
-    launch_simulation -simset $sim_fileset -snapshot $snapshot_name
+    launch_simulation -simset $sim_fileset
 
     # Wait for simulation to complete
     wait_on_simulation
-    
+
     # Check the simulation results
     # Note: `get_property simulation.status` is not typically used; check simulation logs instead
     set simulation_status [lindex [exec tail -n 10 $log_file] 0]
@@ -71,7 +71,7 @@ foreach tb $testbenches {
     puts "Generating test report for testbench: $tb_name..."
     set report_file [file join $proj_folder "${tb_name}_report.txt"]
     exec xsim -report $report_file -log $log_file
-    
+
     puts "Test report generated at: $report_file"
 }
 
