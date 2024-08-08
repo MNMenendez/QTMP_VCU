@@ -1,24 +1,9 @@
-# Define directories
+# Define directories and files
 set sources_1_dir "C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP/QTMP_VCU/QTMP_VCU.gen/sources_1"
 set testbench_dir "C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP/QTMP_VCU/QTMP_VCU.gen/testbenches"
 set project_dir "C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP/QTMP_VCU"
 set project_file "$project_dir/ART_QTMP.xpr"
 set simulation_log "$project_dir/simulation.log"
-
-# Ensure the directories exist
-if {[file isdirectory $sources_1_dir] == 0} {
-    file mkdir $sources_1_dir
-    puts "Created sources_1 directory at '$sources_1_dir'."
-} else {
-    puts "Sources_1 directory already exists at '$sources_1_dir'."
-}
-
-if {[file isdirectory $testbench_dir] == 0} {
-    file mkdir $testbench_dir
-    puts "Created testbenches directory at '$testbench_dir'."
-} else {
-    puts "Testbenches directory already exists at '$testbench_dir'."
-}
 
 # Add design files from sources_1
 set source_files [glob -nocomplain -directory $sources_1_dir *.vhd]
@@ -44,11 +29,6 @@ update_compile_order -fileset sources_1
 # Set top module for simulation
 set_property top hcmt_cpld_top [get_filesets sim_1]
 
-# Ensure project directory exists
-if {[file isdirectory $project_dir] == 0} {
-    file mkdir $project_dir
-}
-
 # Save the project to disk
 save_project_as $project_file
 puts "Project saved to '$project_file'."
@@ -57,7 +37,9 @@ puts "Project saved to '$project_file'."
 if {[file exists $simulation_log]} {
     file delete $simulation_log
 }
-file output $simulation_log
+
+# Redirect simulation output to the log file
+log_file $simulation_log
 
 # Launch simulations for each testbench file
 foreach tb [glob -nocomplain -directory $testbench_dir *.vhd] {
@@ -65,7 +47,7 @@ foreach tb [glob -nocomplain -directory $testbench_dir *.vhd] {
     puts "Launching simulation for testbench: $tb_name..."
     puts "Launching simulation for testbench: $tb_name..." >> $simulation_log
 
-    # Set the simulation fileset
+    # Launch simulation and redirect output to log file
     launch_simulation -simset sim_1 >> $simulation_log 2>&1
 
     # Check if simulation failed
