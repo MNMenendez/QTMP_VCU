@@ -1,6 +1,7 @@
 # Define directories
 set sources_1_dir "C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP/QTMP_VCU/QTMP_VCU.gen/sources_1"
 set testbench_dir "C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP/QTMP_VCU/QTMP_VCU.gen/testbenches"
+set project_dir "C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP/QTMP_VCU"
 
 # Ensure the directories exist
 if {[file isdirectory $sources_1_dir] == 0} {
@@ -41,6 +42,14 @@ update_compile_order -fileset sources_1
 # Set top module for simulation
 set_property top hcmt_cpld_top [get_filesets sim_1]
 
+# Save the project to disk
+if {[file isdirectory $project_dir] == 0} {
+    file mkdir $project_dir
+}
+set project_file "$project_dir/ART_QTMP.xpr"
+save_project -path $project_file
+puts "Project saved to '$project_file'."
+
 # Launch simulation
 foreach tb [glob -nocomplain -directory $testbench_dir *.vhd] {
     set tb_name [file rootname [file tail $tb]]
@@ -50,4 +59,4 @@ foreach tb [glob -nocomplain -directory $testbench_dir *.vhd] {
     launch_simulation -simset sim_1
 }
 
-puts "Project setup completed."
+puts "Simulation launched."
