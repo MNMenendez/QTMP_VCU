@@ -38,9 +38,11 @@ set_property -name "default_lib" -value "xil_defaultlib" -objects $obj
 set_property -name "enable_vhdl_2008" -value "1" -objects $obj
 puts "Project '${_xil_proj_name_}' created successfully."
 
-# Create and manage filesets
-# Create sources_1 directory if it does not exist
-set sources_dir "${origin_dir}/sources_1"
+# Define paths for sources_1
+set sources_dir "${origin_dir}/${_xil_proj_name_}.gen/sources_1"
+set source_dir "${origin_dir}/source"
+
+# Create the sources_1 directory if it does not exist
 if {![file exists $sources_dir]} {
     file mkdir $sources_dir
     puts "Created directory: $sources_dir"
@@ -52,14 +54,20 @@ if {[string equal [get_filesets -quiet sources_1] ""]} {
 }
 set obj [get_filesets sources_1]
 
-# Add VHD files from the source directory
-set source_dir "${origin_dir}/source"
+# Add VHD files from the source directory to sources_1 fileset
 set files [glob -nocomplain -directory $source_dir *.vhd]
 if {[llength $files] == 0} {
     puts "WARNING: No VHD files found in the source directory '$source_dir'."
 } else {
+    # Move files to sources_1 directory
+    foreach file $files {
+        set dest_file [file join $sources_dir [file tail $file]]
+        file copy -force $file $dest_file
+    }
+    # Add VHD files from sources_1 directory to the fileset
+    set files [glob -nocomplain -directory $sources_dir *.vhd]
     add_files -norecurse -fileset $obj $files
-    puts "Added VHD files from source directory."
+    puts "Added VHD files from source directory to sources_1 fileset."
 }
 
 # Ensure the constrs_1 fileset exists
