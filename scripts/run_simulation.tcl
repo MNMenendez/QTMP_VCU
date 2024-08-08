@@ -2,7 +2,7 @@
 set sources_1_dir "C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP/QTMP_VCU/QTMP_VCU.gen/sources_1"
 set testbench_dir "C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP/QTMP_VCU/QTMP_VCU.gen/testbenches"
 
-# Create directories if they don't exist
+# Ensure the directories exist
 if {[file isdirectory $sources_1_dir] == 0} {
     file mkdir $sources_1_dir
     puts "Created sources_1 directory at '$sources_1_dir'."
@@ -18,8 +18,9 @@ if {[file isdirectory $testbench_dir] == 0} {
 }
 
 # Copy files from source to target directories
-exec xcopy /s /e /y "C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP/source/*" "$sources_1_dir"
-exec xcopy /s /e /y "C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP/testbenches/*" "$testbench_dir"
+# Correcting the xcopy command syntax
+exec xcopy /s /e /y "C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP/source/*" "$sources_1_dir" > nul 2>&1
+exec xcopy /s /e /y "C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP/testbenches/*" "$testbench_dir" > nul 2>&1
 
 # Add design files from sources_1
 set source_files [glob -nocomplain -directory $sources_1_dir *.vhd]
