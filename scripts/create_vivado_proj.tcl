@@ -11,13 +11,22 @@ if {[info exists ::user_project_name]} {
 # Project file path
 set proj_file "[file normalize "${origin_dir}/${_xil_proj_name_}.xpr"]"
 
-# Delete the existing project files if they exist
+# Attempt to delete the existing project files
 if {[file exists $proj_file]} {
     puts "Deleting existing project files..."
-    file delete -force $proj_file
-    file delete -force [file join $origin_dir "${_xil_proj_name_}.cache"]
-    file delete -force [file join $origin_dir "${_xil_proj_name_}.hw"]
-    file delete -force [file join $origin_dir "${_xil_proj_name_}.ip_user_files"]
+    if {[catch {file delete -force $proj_file} err]} {
+        puts "ERROR: Failed to delete project file '$proj_file'. Error: $err"
+        exit 1
+    }
+    if {[catch {file delete -force [file join $origin_dir "${_xil_proj_name_}.cache"]} err]} {
+        puts "ERROR: Failed to delete cache file. Error: $err"
+    }
+    if {[catch {file delete -force [file join $origin_dir "${_xil_proj_name_}.hw"]} err]} {
+        puts "ERROR: Failed to delete hardware file. Error: $err"
+    }
+    if {[catch {file delete -force [file join $origin_dir "${_xil_proj_name_}.ip_user_files"]} err]} {
+        puts "ERROR: Failed to delete IP user files. Error: $err"
+    }
 }
 
 # Create the project, forcing it to overwrite if it already exists
