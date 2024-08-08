@@ -65,7 +65,6 @@ proc run_vivado_simulation {tb log_fd vivadoPath project_dir xml_fd} {
     # Run simulation and capture output
     set result [catch {
         set output [exec $cmd]
-        puts $log_fd "Simulation output: $output"
         return 0
     } err_msg]
 
@@ -75,6 +74,8 @@ proc run_vivado_simulation {tb log_fd vivadoPath project_dir xml_fd} {
         set status "passed"
     } elseif {[string match "*skipped*" $output]} {
         set status "skipped"
+    } else {
+        set output "$err_msg"
     }
 
     puts $log_fd "Simulation for $tb_name $status."
