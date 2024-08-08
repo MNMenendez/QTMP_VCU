@@ -1,7 +1,4 @@
-# Set environment variables
-set env(PATH) "C:/MinGW/bin;$env(PATH)"
-
-# Set project file and simulation fileset
+# Define paths
 set proj_file "C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP/QTMP_VCU.xpr"
 set sim_fileset "sim_1"
 
@@ -14,12 +11,20 @@ if {[file exists $proj_file]} {
     exit 1
 }
 
-# Check and set fileset
+# Check if the fileset exists
 if {[llength [get_filesets $sim_fileset]] == 0} {
     puts "ERROR: Fileset '$sim_fileset' does not exist."
     exit 1
 }
+
+# Set the top module for simulation
 set_property top hcmt_cpld_top [get_filesets $sim_fileset]
+
+# Set environment variable for GCC path
+set env(PATH) "C:/MinGW/bin;$env(PATH)"
+
+# Print the environment variable to confirm it's set
+puts "Environment PATH: $env(PATH)"
 
 # Launch simulation
 puts "Launching simulation..."
