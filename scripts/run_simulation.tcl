@@ -1,5 +1,3 @@
-source {C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP/scripts/run_simulation.tcl}
-
 # Define directories and files
 set sources_1_dir "C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP/QTMP_VCU/QTMP_VCU.gen/sources_1"
 set testbench_dir "C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP/QTMP_VCU/QTMP_VCU.gen/testbenches"
