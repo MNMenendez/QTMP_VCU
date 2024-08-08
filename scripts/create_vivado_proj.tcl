@@ -1,41 +1,39 @@
 # Define project name and directories
 set origin_dir "C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP"
+set proj_folder "${origin_dir}/QTMP_VCU"
 set _xil_proj_name_ "QTMP_VCU"
-set proj_file "[file normalize "${origin_dir}/${_xil_proj_name_}.xpr"]"
+set proj_file "[file normalize "${proj_folder}/${_xil_proj_name_}.xpr"]"
 
 # Delete existing project files if they exist
-if {[file exists $proj_file]} {
-    puts "Deleting existing project files..."
-    if {[catch {file delete -force $proj_file} err]} {
-        puts "ERROR: Failed to delete project file '$proj_file'. Error: $err"
+if {[file isdirectory $proj_folder]} {
+    puts "Deleting existing project folder..."
+    if {[catch {file delete -force $proj_folder} err]} {
+        puts "ERROR: Failed to delete project folder '$proj_folder'. Error: $err"
         exit 1
     }
-    if {[catch {file delete -force [file join $origin_dir "${_xil_proj_name_}.cache"]} err]} {
-        puts "ERROR: Failed to delete cache file. Error: $err"
-    }
-    if {[catch {file delete -force [file join $origin_dir "${_xil_proj_name_}.hw"]} err]} {
-        puts "ERROR: Failed to delete hardware file. Error: $err"
-    }
-    if {[catch {file delete -force [file join $origin_dir "${_xil_proj_name_}.ip_user_files"]} err]} {
-        puts "ERROR: Failed to delete IP user files. Error: $err"
-    }
+} else {
+    file mkdir $proj_folder
+    puts "Created project folder at '$proj_folder'."
 }
 
-# Create the project in a writable directory
-cd $origin_dir
+# Create the project
+cd $proj_folder
 create_project ${_xil_proj_name_} -part xc7z020clg484-1 -force
 set obj [current_project]
 
 # Ensure project files are writable
 file attributes $proj_file -permissions writable
+foreach file [glob -nocomplain -directory $proj_folder *] {
+    file attributes $file -permissions writable
+}
 
 # Set project properties
 set_property -name "default_lib" -value "xil_defaultlib" -objects $obj
 set_property -name "enable_vhdl_2008" -value "1" -objects $obj
-puts "Project '${_xil_proj_name_}' created successfully."
+puts "Project '${_xil_proj_name_}' created successfully in '$proj_folder'."
 
 # Define source directories
-set sources_1_dir "${origin_dir}/${_xil_proj_name_}.gen/sources_1"
+set sources_1_dir "${proj_folder}/QTMP_VCU.gen/sources_1"
 if {[file isdirectory $sources_1_dir] == 0} {
     file mkdir $sources_1_dir
     puts "Created sources_1 directory at '$sources_1_dir'."
