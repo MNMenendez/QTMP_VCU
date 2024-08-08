@@ -29,10 +29,10 @@ puts "Running simulation for 1000ns..."
 run 1000ns
 
 # Check if the simulation log file exists and report status
-set sim_log "C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP/QTMP_VCU.sim/sim_1/behav/xsim/sim.log"
+set sim_log "C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP/QTMP_VCU.sim/sim_1/behav/xsim/simulate.log"
 if {[file exists $sim_log]} {
     puts "Simulation log file found: $sim_log"
-    # Copy the log file to a more accessible location or manage it as needed
+    # Optionally copy the log file to a more accessible location or manage it as needed
     exec cmd /c "type $sim_log > C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP/simulation.log"
 } else {
     puts "ERROR: Simulation log file '$sim_log' does not exist."
