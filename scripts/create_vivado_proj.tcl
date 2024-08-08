@@ -11,6 +11,15 @@ if {[info exists ::user_project_name]} {
 # Project file path
 set proj_file "[file normalize "${origin_dir}/${_xil_proj_name_}.xpr"]"
 
+# Delete the existing project files if they exist
+if {[file exists $proj_file]} {
+    puts "Deleting existing project files..."
+    file delete -force $proj_file
+    file delete -force [file join $origin_dir "${_xil_proj_name_}.cache"]
+    file delete -force [file join $origin_dir "${_xil_proj_name_}.hw"]
+    file delete -force [file join $origin_dir "${_xil_proj_name_}.ip_user_files"]
+}
+
 # Create the project, forcing it to overwrite if it already exists
 create_project ${_xil_proj_name_} -part xc7z020clg484-1 -force
 
