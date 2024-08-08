@@ -33,26 +33,33 @@ set_property top hcmt_cpld_top [get_filesets sim_1]
 save_project_as $project_file
 puts "Project saved to '$project_file'."
 
-# Create or clear the simulation log
+# Clear or create the simulation log
 if {[file exists $simulation_log]} {
     file delete $simulation_log
 }
+file delete $simulation_log
+
+# Open the simulation log for writing
+set log_fd [open $simulation_log "a"]
 
 # Launch simulations for each testbench file
 foreach tb [glob -nocomplain -directory $testbench_dir *.vhd] {
     set tb_name [file rootname [file tail $tb]]
-    puts "Launching simulation for testbench: $tb_name..."
+    puts $log_fd "Launching simulation for testbench: $tb_name..."
 
-    # Redirect simulation output to the log file
-    set cmd "launch_simulation -simset sim_1"
-    set output [exec $cmd >> $simulation_log 2>&1]
+    # Set the simulation fileset
+    launch_simulation -simset sim_1
 
-    # Check if simulation failed
-    if {[lindex $output 0] == 0} {
-        puts "Simulation for $tb_name completed successfully."
+    # Check the simulation result
+    set result [catch {launch_simulation -simset sim_1} err_msg]
+    if {$result == 0} {
+        puts $log_fd "Simulation for $tb_name completed successfully."
     } else {
-        puts "ERROR: Simulation for $tb_name failed. Check $simulation_log for details."
+        puts $log_fd "ERROR: Simulation for $tb_name failed. Error: $err_msg"
     }
 }
+
+# Close the log file
+close $log_fd
 
 puts "All simulations launched."
