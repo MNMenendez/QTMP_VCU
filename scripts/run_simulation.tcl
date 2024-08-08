@@ -41,22 +41,15 @@ if {[llength $testbenches] == 0} {
     exit
 }
 
-# Check if the simulation command is available
-if {[catch {exec which launch_simulation} result]} {
-    puts $log_fd "ERROR: 'launch_simulation' command not found. Please ensure it is in your PATH."
-    close $log_fd
-    exit
-}
-
-# Launch simulations for each testbench
-foreach tb $testbenches {
+# Define Vivado simulation command
+proc run_vivado_simulation {tb log_fd} {
     set tb_name [file rootname [file tail $tb]]
     puts $log_fd "Launching simulation for testbench: $tb_name..."
-
+    
     # Run simulation and capture output
     set result [catch {
-        # Explicitly specify the simulation command
-        set cmd "launch_simulation -simset sim_1 -testbench $tb"
+        # Use Vivado command to run simulation
+        set cmd "vivado -mode batch -source $tb"
         set output [exec $cmd]
         puts $log_fd "Simulation output: $output"
         return 0
@@ -68,6 +61,11 @@ foreach tb $testbenches {
     } else {
         puts $log_fd "ERROR: Simulation for $tb_name failed. Error: $err_msg"
     }
+}
+
+# Launch simulations for each testbench
+foreach tb $testbenches {
+    run_vivado_simulation $tb $log_fd
 }
 
 # Log the contents of the testbench directory after simulation
