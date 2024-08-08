@@ -29,15 +29,14 @@ update_compile_order -fileset sources_1
 # Set top module for simulation
 set_property top hcmt_cpld_top [get_filesets sim_1]
 
-# Save the project to disk
-save_project_as $project_file
+# Save the project to disk with force option to overwrite existing files
+save_project_as -force $project_file
 puts "Project saved to '$project_file'."
 
 # Clear or create the simulation log
 if {[file exists $simulation_log]} {
     file delete $simulation_log
 }
-file delete $simulation_log
 
 # Open the simulation log for writing
 set log_fd [open $simulation_log "a"]
