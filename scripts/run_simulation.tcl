@@ -48,7 +48,7 @@ foreach tb [glob -nocomplain -directory $testbench_dir *.vhd] {
     set tb_name [file rootname [file tail $tb]]
     puts $log_fd "Launching simulation for testbench: $tb_name..."
 
-    # Run simulation and capture output
+    # Redirect output to the log file
     set result [catch {
         launch_simulation -simset sim_1
     } err_msg]
