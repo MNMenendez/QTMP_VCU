@@ -1,45 +1,43 @@
 import sys
-import os
 import xml.etree.ElementTree as ET
 
-def convert_to_junit(log_file, output_file):
-    # Create a basic JUnit XML structure
-    testsuites = ET.Element('testsuites')
-    testsuite = ET.SubElement(testsuites, 'testsuite', name='Vivado Test Suite', tests='0', failures='0')
+def parse_log_file(log_file_path):
+    """Parse the simulation log file to extract test results."""
+    test_results = []
+    
+    with open(log_file_path, 'r') as file:
+        lines = file.readlines()
+    
+    for line in lines:
+        if 'TEST' in line:
+            parts = line.split()
+            test_name = parts[1].strip("'")
+            test_status = parts[2]
+            test_results.append((test_name, test_status))
+    
+    return test_results
 
-    if not os.path.isfile(log_file):
-        raise FileNotFoundError(f"Log file {log_file} does not exist.")
-
-    with open(log_file, 'r') as f:
-        lines = f.readlines()
-
-    # Simple parsing logic to count failures and tests
-    num_failures = sum(1 for line in lines if 'Failure' in line)
-    num_tests = sum(1 for line in lines if 'Test' in line)  # Update this based on log content
-
-    # Update testsuite attributes
-    testsuite.set('tests', str(num_tests))
-    testsuite.set('failures', str(num_failures))
-
-    # Create a single test case
-    testcase = ET.SubElement(testsuite, 'testcase', name='TestCase', classname='vivado_simulation')
-
-    if num_failures > 0:
-        # If there are failures, add a failure element
-        ET.SubElement(testcase, 'failure', message='Test failed').text = ''.join(lines)
-    else:
-        # If there are no failures, add a system-out element
-        ET.SubElement(testcase, 'system-out').text = ''.join(lines)
-
-    # Write the XML to the output file
-    tree = ET.ElementTree(testsuites)
-    tree.write(output_file, encoding='utf-8', xml_declaration=True)
+def create_junit_xml(test_results, output_file_path):
+    """Create a JUnit XML report from test results."""
+    testsuite = ET.Element('testsuite', name='Simulation Results', tests=str(len(test_results)))
+    
+    for test_name, status in test_results:
+        testcase = ET.SubElement(testsuite, 'testcase', name=test_name)
+        if status == 'FAILED':
+            ET.SubElement(testcase, 'failure', message='Test failed')
+    
+    tree = ET.ElementTree(testsuite)
+    with open(output_file_path, 'wb') as file:
+        tree.write(file)
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
-        print("Usage: python convert_to_junit_xml.py <log_file> <output_file>")
+        print("Usage: python convert_to_junit_xml.py <log_file_path> <output_file_path>")
         sys.exit(1)
 
-    log_file = sys.argv[1]
-    output_file = sys.argv[2]
-    convert_to_junit(log_file, output_file)
+    log_file_path = sys.argv[1]
+    output_file_path = sys.argv[2]
+
+    test_results = parse_log_file(log_file_path)
+    create_junit_xml(test_results, output_file_path)
+    print(f"JUnit XML report created at {output_file_path}")
