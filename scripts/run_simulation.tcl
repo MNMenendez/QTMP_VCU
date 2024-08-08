@@ -37,12 +37,18 @@ puts "Cleared existing simulation log or created a new one."
 
 # Open log file and start logging
 set log_fd [open $simulation_log "a"]
-puts $log_fd "Simulation Log Started at [clock seconds]"
+
+# Function to get current time in a human-readable format
+proc get_current_time {} {
+    return [clock format [clock seconds] -format "%Y-%m-%d %H:%M:%S"]
+}
+
+# Log the start of the simulation
+puts $log_fd "Simulation Log Started at [get_current_time]"
 
 # Debug: Check directory contents before simulation
 puts $log_fd "Contents of testbench directory before simulation:"
-set dir_contents [exec dir $testbench_dir]
-puts $log_fd $dir_contents
+exec dir $testbench_dir >> $simulation_log
 
 # Get the list of testbenches
 set testbenches [glob -nocomplain -directory $testbench_dir *.vhd]
@@ -62,7 +68,7 @@ foreach tb $testbenches {
     # Run simulation and capture output
     set result [catch {
         # Explicitly specify the simulation command
-        set cmd "launch_simulation -simset sim_1"
+        set cmd "launch_simulation -simset sim_1 -testbench $tb"
         set output [exec $cmd]
         puts $log_fd "Simulation output: $output"
         return 0
@@ -78,8 +84,7 @@ foreach tb $testbenches {
 
 # Debug: Check directory contents after simulation
 puts $log_fd "Contents of testbench directory after simulation:"
-set dir_contents [exec dir $testbench_dir]
-puts $log_fd $dir_contents
+exec dir $testbench_dir >> $simulation_log
 
 # Close the log file
 close $log_fd
