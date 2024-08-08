@@ -28,15 +28,27 @@ puts "Project '${_xil_proj_name_}' created successfully in '$proj_folder'."
 
 # Define directories for sources and testbenches
 set sources_1_dir "${proj_folder}/QTMP_VCU.gen/sources_1"
-set testbench_dir "${proj_folder}/QTMP_VCU.gen/sources_1"
+set testbench_dir "${proj_folder}/QTMP_VCU.gen/sources_1"  ;# Adjust if testbenches are in a different folder
 
-# Add design files to sources_1
-add_files -fileset sources_1 [glob -nocomplain -directory $sources_1_dir *.vhd]
-puts "Added design files from '$sources_1_dir' to sources_1."
+# Check if source directory exists
+if {[file isdirectory $sources_1_dir]} {
+    # Add design files to sources_1
+    add_files -fileset sources_1 [glob -nocomplain -directory $sources_1_dir *.vhd]
+    puts "Added design files from '$sources_1_dir' to sources_1."
+} else {
+    puts "ERROR: Source directory '$sources_1_dir' does not exist."
+    exit 1
+}
 
-# Add testbench files to sim_1
-add_files -fileset sim_1 [glob -nocomplain -directory $testbench_dir *.vhd]
-puts "Added testbench files from '$testbench_dir' to sim_1."
+# Check if testbench directory exists
+if {[file isdirectory $testbench_dir]} {
+    # Add testbench files to sim_1
+    add_files -fileset sim_1 [glob -nocomplain -directory $testbench_dir *.vhd]
+    puts "Added testbench files from '$testbench_dir' to sim_1."
+} else {
+    puts "ERROR: Testbench directory '$testbench_dir' does not exist."
+    exit 1
+}
 
 # Update compile order
 update_compile_order -fileset sources_1
