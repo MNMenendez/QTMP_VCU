@@ -9,6 +9,7 @@ pipeline {
         VIVADO_PATH = 'C:\\Xilinx\\Vivado\\2024.1\\bin'
         SCRIPT_PATH = 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\scripts'
         SIM_LOG_FILE = 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\QTMP_VCU.sim\\sim_1\\behav\\xsim\\simulate.log'
+        GCC_PATH = 'C:\\MinGW\\bin'  // Updated GCC path
     }
 
     stages {
@@ -44,6 +45,9 @@ pipeline {
                     
                     echo "Vivado Path: ${env.VIVADO_PATH}"
                     
+                    // Update PATH to include GCC path
+                    bat "set PATH=%GCC_PATH%;%PATH%"
+                    
                     echo "Creating Vivado project..."
                     bat """
                     "%VIVADO_PATH%\\vivado" -mode batch -source ${env.SCRIPT_PATH}\\create_vivado_proj.tcl
@@ -56,6 +60,8 @@ pipeline {
             steps {
                 script {
                     echo "Running Vivado simulation..."
+                    // Ensure GCC path is included in the PATH for this stage
+                    bat "set PATH=%GCC_PATH%;%PATH%"
                     bat """
                     "%VIVADO_PATH%\\vivado" -mode batch -source ${env.SCRIPT_PATH}\\run_simulation.tcl
                     """
@@ -82,6 +88,8 @@ pipeline {
             steps {
                 script {
                     echo "Running Vivado synthesis..."
+                    // Ensure GCC path is included in the PATH for this stage
+                    bat "set PATH=%GCC_PATH%;%PATH%"
                     bat """
                     "%VIVADO_PATH%\\vivado" -mode batch -source ${env.SCRIPT_PATH}\\run_synthesis.tcl
                     """
@@ -93,6 +101,8 @@ pipeline {
             steps {
                 script {
                     echo "Running Vivado implementation..."
+                    // Ensure GCC path is included in the PATH for this stage
+                    bat "set PATH=%GCC_PATH%;%PATH%"
                     bat """
                     "%VIVADO_PATH%\\vivado" -mode batch -source ${env.SCRIPT_PATH}\\run_implementation.tcl
                     """
@@ -104,6 +114,8 @@ pipeline {
             steps {
                 script {
                     echo "Generating bitstream with Vivado..."
+                    // Ensure GCC path is included in the PATH for this stage
+                    bat "set PATH=%GCC_PATH%;%PATH%"
                     bat """
                     "%VIVADO_PATH%\\vivado" -mode batch -source ${env.SCRIPT_PATH}\\generate_bitstream.tcl
                     """
