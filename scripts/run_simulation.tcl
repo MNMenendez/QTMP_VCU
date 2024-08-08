@@ -1,86 +1,81 @@
-# Define project name and directories
-set origin_dir "C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP"
-set proj_folder "${origin_dir}/QTMP_VCU"
-set _xil_proj_name_ "QTMP_VCU"
-set proj_file "[file normalize "${proj_folder}/${_xil_proj_name_}.xpr"]"
+# Define the project file and fileset
+set proj_folder "C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP/QTMP_VCU"
+set proj_file [file normalize "${proj_folder}/QTMP_VCU.xpr"]
+set sim_fileset "sim_1"
+set testbench_dir "${proj_folder}/QTMP_VCU.gen/sources_1"
 
-# Delete existing project files if they exist
-if {[file isdirectory $proj_folder]} {
-    puts "Deleting existing project folder..."
-    if {[catch {file delete -force $proj_folder} err]} {
-        puts "ERROR: Failed to delete project folder '$proj_folder'. Error: $err"
+# Check if the project file exists and open the project
+if {[file exists $proj_file]} {
+    open_project $proj_file
+    puts "Opened project: $proj_file"
+} else {
+    puts "ERROR: Project file '$proj_file' does not exist."
+    exit 1
+}
+
+# Set GCC path and update the PATH environment variable
+set gcc_path "C:/Xilinx/Vivado/2024.1/tps/mingw/9.3.0/win64.o/nt/bin"
+set env(PATH) "${gcc_path};$env(PATH)"
+puts "Updated Environment PATH: $env(PATH)"
+
+# Check if the fileset exists
+if {[llength [get_filesets $sim_fileset]] == 0} {
+    puts "ERROR: Fileset '$sim_fileset' does not exist."
+    exit 1
+}
+
+# Add all testbenches to the simulation fileset
+puts "Adding testbenches..."
+set testbenches [glob -nocomplain -directory $testbench_dir *.vhd]
+if {[llength $testbenches] == 0} {
+    puts "ERROR: No testbenches found in directory $testbench_dir."
+    exit 1
+}
+foreach tb $testbenches {
+    add_files -fileset $sim_fileset $tb
+    puts "Added testbench: $tb"
+}
+
+# Update the compile order for the simulation fileset
+update_compile_order -fileset $sim_fileset
+
+# Set the top module for simulation
+set_property top [lindex [get_filesets $sim_fileset] 0] [get_filesets $sim_fileset]
+
+# Launch simulation for each testbench and generate reports
+foreach tb $testbenches {
+    set tb_name [file rootname [file tail $tb]]
+    puts "Launching simulation for testbench: $tb_name..."
+
+    # Define unique names for the snapshot and log files
+    set snapshot_name "${tb_name}_behav"
+    set log_file [file join $proj_folder "${tb_name}_simulate.log"]
+
+    # Launch simulation
+    launch_simulation -simset $sim_fileset
+
+    # Wait for simulation to complete
+    wait_on_simulation
+
+    # Check the simulation results
+    # Note: `get_property simulation.status` is not typically used; check simulation logs instead
+    set simulation_status [lindex [exec tail -n 10 $log_file] 0]
+    if {[string match "*PASSED*" $simulation_status]} {
+        puts "Simulation for testbench: $tb_name passed."
+    } else {
+        puts "Simulation for testbench: $tb_name failed. Check the log file for details: $log_file"
         exit 1
     }
-} else {
-    file mkdir $proj_folder
-    puts "Created project folder at '$proj_folder'."
+
+    # Generate the test report
+    puts "Generating test report for testbench: $tb_name..."
+    set report_file [file join $proj_folder "${tb_name}_report.txt"]
+    exec xsim -report $report_file -log $log_file
+
+    puts "Test report generated at: $report_file"
 }
 
-# Create the project
-cd $proj_folder
-create_project ${_xil_proj_name_} -part xc7z020clg484-1 -force
-set obj [current_project]
+# Close the project
+close_project
 
-# Set project properties
-set_property -name "default_lib" -value "xil_defaultlib" -objects $obj
-set_property -name "enable_vhdl_2008" -value "1" -objects $obj
-puts "Project '${_xil_proj_name_}' created successfully in '$proj_folder'."
-
-# Define directories for sources and testbenches
-set sources_1_dir "${proj_folder}/QTMP_VCU.gen/sources_1"
-set testbench_dir "${proj_folder}/QTMP_VCU.gen/testbenches"
-
-# Create directories if they do not exist
-if {[file isdirectory $sources_1_dir] == 0} {
-    file mkdir $sources_1_dir
-    puts "Created sources_1 directory at '$sources_1_dir'."
-} else {
-    puts "Sources directory already exists at '$sources_1_dir'."
-}
-
-if {[file isdirectory $testbench_dir] == 0} {
-    file mkdir $testbench_dir
-    puts "Created testbenches directory at '$testbench_dir'."
-} else {
-    puts "Testbenches directory already exists at '$testbench_dir'."
-}
-
-# Verify the contents of the source directory
-puts "Checking contents of source directory..."
-exec dir $sources_1_dir
-
-# Verify the contents of the testbench directory
-puts "Checking contents of testbench directory..."
-exec dir $testbench_dir
-
-# Check files in sources_1_dir
-set source_files [glob -nocomplain -directory $sources_1_dir *.vhd]
-puts "Files found in sources_1_dir: $source_files"
-
-# Add design files to sources_1
-if {[llength $source_files] > 0} {
-    add_files -fileset sources_1 $source_files
-    puts "Added design files from '$sources_1_dir' to sources_1."
-} else {
-    puts "ERROR: No VHD files found in '$sources_1_dir'."
-}
-
-# Check files in testbench_dir
-set testbench_files [glob -nocomplain -directory $testbench_dir *.vhd]
-puts "Files found in testbench_dir: $testbench_files"
-
-# Add testbench files to sim_1
-if {[llength $testbench_files] > 0} {
-    add_files -fileset sim_1 $testbench_files
-    puts "Added testbench files from '$testbench_dir' to sim_1."
-} else {
-    puts "ERROR: No VHD files found in '$testbench_dir'."
-}
-
-# Update compile order
-update_compile_order -fileset sources_1
-
-# Set top module for simulation
-set_property top hcmt_cpld_top [get_filesets sim_1]
-
-puts "Project setup completed."
+puts "Simulation complete. Test reports generated."
