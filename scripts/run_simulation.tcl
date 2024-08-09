@@ -106,9 +106,7 @@ puts $log_fd "All simulations launched."
 close $log_fd
 
 # Ensure XML file is properly closed
-if {[file isopen $xml_fd]} {
-    puts $xml_fd "</testsuites>"
-    close $xml_fd
-}
+puts $xml_fd "</testsuites>"
+close $xml_fd
 
 puts "Simulation results saved to $results_xml"
