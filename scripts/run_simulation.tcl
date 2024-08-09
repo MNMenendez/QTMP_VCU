@@ -86,7 +86,9 @@ proc run_modelsim_simulation {tb log_fd modelsimPath project_dir xml_fd} {
         set output "$err_msg\n$output"
     }
 
+    # Log simulation status
     puts $log_fd "Simulation for $tb_name $status."
+    # Write to XML
     puts $xml_fd "<testcase name=\"$tb_name\" status=\"$status\">"
     puts $xml_fd "    <system-out><![CDATA[$output]]></system-out>"
     puts $xml_fd "</testcase>"
@@ -105,7 +107,7 @@ foreach tb $testbenches {
 puts $log_fd "All simulations launched."
 close $log_fd
 
-# Ensure XML file is properly closed
+# Finalize and close XML file
 puts $xml_fd "</testsuites>"
 close $xml_fd
 
