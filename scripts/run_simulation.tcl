@@ -74,13 +74,13 @@ proc run_vivado_simulation {tb log_fd vivadoPath project_dir xml_fd} {
     } err_msg]
 
     # Determine result and write to XML
-    set status "failed"
+    set status "FAILED"
     if {$result == 0} {
         # Check if the simulation output contains the string indicating success
         if {[string match "*finished successfully*" $output]} {
-            set status "passed"
+            set status "PASSED"
         } elseif {[string match "*skipped*" $output]} {
-            set status "skipped"
+            set status "SKIPPED"
         }
     } else {
         # Handle error and capture the output
