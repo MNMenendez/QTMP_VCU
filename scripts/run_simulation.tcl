@@ -56,7 +56,7 @@ if {[llength $testbenches] == 0} {
 }
 
 # Define procedure to run Vivado simulation
-proc run_vivado_simulation {tb log_fd vivadoPath project_file xml_fd} {
+proc run_vivado_simulation {tb log_fd vivadoPath project_dir xml_fd} {
     set tb_name [file rootname [file tail $tb]]
     puts $log_fd "Launching simulation for testbench: $tb_name..."
 
@@ -95,7 +95,9 @@ proc run_vivado_simulation {tb log_fd vivadoPath project_file xml_fd} {
 
 # Launch simulations for each testbench
 foreach tb $testbenches {
-    run_vivado_simulation $tb $log_fd $vivadoPath $project_file $xml_fd
+    catch {
+        run_vivado_simulation $tb $log_fd $vivadoPath $project_dir $xml_fd
+    } err_msg
 }
 
 # Close the log file and XML file
