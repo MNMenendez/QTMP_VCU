@@ -83,7 +83,7 @@ pipeline {
                         
                         // Publish the JUnit XML test results
                         echo "Publishing test results..."
-                        junit "**/${env.SIM_JUNIT_XML}"
+                        junit "${env.SIM_JUNIT_XML}"
                     } else {
                         echo "ERROR: Simulation results XML file not found: ${env.TEST_RESULTS_XML}"
                         currentBuild.result = 'UNSTABLE'
