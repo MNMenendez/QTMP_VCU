@@ -26,6 +26,7 @@ def parse_simulation_results(xml_file_path):
 
 def create_junit_xml(test_results, output_file_path):
     """Create a JUnit XML report from test results."""
+    # Create a JUnit XML report
     testsuite = ET.Element('testsuite', name='Simulation Results', tests=str(len(test_results)))
     
     for test_name, status in test_results:
