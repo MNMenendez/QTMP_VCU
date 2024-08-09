@@ -60,10 +60,13 @@ proc run_vivado_simulation {tb log_fd vivadoPath project_dir xml_fd} {
     puts $log_fd "Launching simulation for testbench: $tb_name..."
 
     # Create the Vivado command for simulation
-    set cmd "cd $project_dir && $vivadoPath/vivado.bat -mode batch -source $tb"
+    set cmd "$vivadoPath/vivado.bat -mode batch -source $tb"
 
     # Run simulation and capture output
     set result [catch {
+        # Change to project directory
+        cd $project_dir
+        # Execute Vivado command
         set output [exec $cmd]
         # Debugging: log the full command and output
         puts $log_fd "Command executed: $cmd"
