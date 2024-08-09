@@ -19,7 +19,7 @@ if {[file exists $simulation_log]} {
 }
 puts "Cleared existing simulation log or created a new one."
 
-# Create/clear XML results file
+# Clear existing results XML or create a new one
 if {[file exists $results_xml]} {
     file delete $results_xml
 }
@@ -54,31 +54,30 @@ if {[llength $testbenches] == 0} {
     exit
 }
 
-# Define Vivado simulation command
-proc run_vivado_simulation {tb log_fd vivadoPath xml_fd} {
+# Define procedure to run Vivado simulation
+proc run_vivado_simulation {tb log_fd vivadoPath project_dir xml_fd} {
     set tb_name [file rootname [file tail $tb]]
     puts $log_fd "Launching simulation for testbench: $tb_name..."
 
     # Create the Vivado command for simulation
-    set cmd "$vivadoPath/vivado.bat -mode batch -source $tb"
+    set cmd "cd $project_dir && $vivadoPath/vivado.bat -mode batch -source $tb"
 
     # Run simulation and capture output
     set result [catch {
         set output [exec $cmd]
+        puts $log_fd "Simulation output: $output"
         return 0
     } err_msg]
 
-    # Handle error if command fails
-    if {$result != 0} {
-        set output "Error running command: $err_msg"
-    }
-
     # Determine result and write to XML
     set status "failed"
-    if {[string match "*finished successfully*" $output]} {
-        set status "passed"
-    } elseif {[string match "*skipped*" $output]} {
-        set status "skipped"
+    if {$result == 0} {
+        # Check if the simulation output contains the string indicating success
+        if {[string match "*finished successfully*" $output]} {
+            set status "passed"
+        } elseif {[string match "*skipped*" $output]} {
+            set status "skipped"
+        }
     }
 
     puts $log_fd "Simulation for $tb_name $status."
@@ -89,16 +88,11 @@ proc run_vivado_simulation {tb log_fd vivadoPath xml_fd} {
 
 # Launch simulations for each testbench
 foreach tb $testbenches {
-    run_vivado_simulation $tb $log_fd $vivadoPath $xml_fd
+    run_vivado_simulation $tb $log_fd $vivadoPath $project_dir $xml_fd
 }
 
-# Close XML results file
+# Close the log file and XML file
+puts $log_fd "All simulations launched."
+close $log_fd
 puts $xml_fd "</testsuites>"
 close $xml_fd
-
-# Log the contents of the testbench directory after simulation
-log_directory_contents $log_fd $testbench_dir
-
-# Close the log file
-close $log_fd
-puts "All simulations launched and results recorded."
