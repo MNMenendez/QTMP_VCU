@@ -63,27 +63,27 @@ pipeline {
                     
                     // Ensure GCC path is included in the PATH for this stage
                     bat "set PATH=%GCC_PATH%;%PATH%"
-
+        
                     // Run the simulation
                     bat """
                     "%VIVADO_PATH%\\vivado" -mode batch -source ${env.SCRIPT_PATH}\\run_simulation.tcl
                     """
-
+        
                     // Check if simulation results XML file exists
                     if (fileExists("${env.TEST_RESULTS_XML}")) {
                         echo "Simulation results XML file found: ${env.TEST_RESULTS_XML}"
                         
                         // Convert the simulation results XML to JUnit XML format
                         echo "Converting simulation results to JUnit XML..."
-                        bat "python ${env.CONVERT_SCRIPT} ${env.SIM_LOG_FILE} ${env.TEST_RESULTS_XML}"
+                        bat "python ${env.CONVERT_SCRIPT} ${env.TEST_RESULTS_XML} ${env.SIM_JUNIT_XML}"
                         
                         // Archive the JUnit XML test results
                         echo "Archiving test results..."
-                        archiveArtifacts artifacts: "${env.TEST_RESULTS_XML}", allowEmptyArchive: true
+                        archiveArtifacts artifacts: "${env.SIM_JUNIT_XML}", allowEmptyArchive: true
                         
                         // Publish the JUnit XML test results
                         echo "Publishing test results..."
-                        junit '**/${env.TEST_RESULTS_XML}'
+                        junit '**/${env.SIM_JUNIT_XML}'
                     } else {
                         echo "ERROR: Simulation results XML file not found: ${env.TEST_RESULTS_XML}"
                         currentBuild.result = 'UNSTABLE'
@@ -91,7 +91,7 @@ pipeline {
                 }
             }
         }
-
+        
         stage('Run Synthesis') {
             steps {
                 script {
