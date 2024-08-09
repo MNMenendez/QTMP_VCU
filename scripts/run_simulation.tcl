@@ -81,11 +81,6 @@ proc run_vivado_simulation {tb log_fd vivadoPath project_file xml_fd} {
         return 0
     } err_msg]
 
-    # Log error message if any
-    if {$result != 0} {
-        puts $log_fd "Error encountered: $err_msg"
-    }
-
     # Determine result and write to XML
     set status "failed"
     if {$result == 0} {
@@ -108,9 +103,7 @@ proc run_vivado_simulation {tb log_fd vivadoPath project_file xml_fd} {
 
 # Launch simulations for each testbench
 foreach tb $testbenches {
-    catch {
-        run_vivado_simulation $tb $log_fd $vivadoPath $project_file $xml_fd
-    } err_msg
+    run_vivado_simulation $tb $log_fd $vivadoPath $project_file $xml_fd
 }
 
 # Close the log file and XML file
