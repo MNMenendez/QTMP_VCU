@@ -6,13 +6,26 @@ pipeline {
         TOP_LEVEL_ENTITY = 'hcmt_cpld_top'
         TEST_RESULTS_XML = 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\QTMP_VCU\\simulation_results.xml'
         CONVERT_SCRIPT = 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\convert_to_junit_xml.py'
-        SIM_JUNIT_XML = 'converted_results.xml'  // Use a relative path here
         VIVADO_PATH = 'C:\\Xilinx\\Vivado\\2024.1\\bin'
         SCRIPT_PATH = 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\scripts'
         GCC_PATH = 'C:\\MinGW\\bin'
+        SIM_JUNIT_XML = 'converted_results.xml'  // Ensure this matches the actual JUnit XML filename
     }
 
     stages {
+        stage('Cleanup') {
+            steps {
+                script {
+                    echo "Cleaning up previous test results..."
+                    bat '''
+                    if exist "%WORKSPACE%\\converted_results.xml" (
+                        del /q %WORKSPACE%\\converted_results.xml
+                    )
+                    '''
+                }
+            }
+        }
+
         stage('Create Project') {
             steps {
                 script {
@@ -92,9 +105,10 @@ pipeline {
             }
         }
         
+        // Optional: Skip the last 4 stages
         stage('Run Synthesis') {
             when {
-                expression { return false } // Skip this stage
+                expression { false }  // Skip this stage
             }
             steps {
                 script {
@@ -110,7 +124,7 @@ pipeline {
 
         stage('Run Implementation') {
             when {
-                expression { return false } // Skip this stage
+                expression { false }  // Skip this stage
             }
             steps {
                 script {
@@ -126,7 +140,7 @@ pipeline {
 
         stage('Generate Bitstream') {
             when {
-                expression { return false } // Skip this stage
+                expression { false }  // Skip this stage
             }
             steps {
                 script {
@@ -142,7 +156,7 @@ pipeline {
 
         stage('Release Bitfile') {
             when {
-                expression { return false } // Skip this stage
+                expression { false }  // Skip this stage
             }
             steps {
                 script {
@@ -157,29 +171,4 @@ pipeline {
   
                     git log -n 1 --pretty=format:"%H" >> %INFOFILE%
                     echo -n " %PROJ_NAME% " >> %INFOFILE%
-                    git describe --all >> %INFOFILE%
-  
-                    echo "" >> %INFOFILE%
-                    echo "Submodules:" >> %INFOFILE%
-                    git submodule status >> %INFOFILE%
-  
-                    copy %INFOFILE% %RELEASE_DIR%
-                    copy vivado\\%PROJ_NAME%.runs\\impl_1\\top.bit %RELEASE_DIR%\\%BITFILE%
-                    '''
-                }
-            }
-        }
-    }
-
-    post {
-        always {
-            echo 'Cleaning up...'
-        }
-        success {
-            echo 'Tests passed successfully!'
-        }
-        failure {
-            echo 'Tests failed. Please check the logs.'
-        }
-    }
-}
+                   
