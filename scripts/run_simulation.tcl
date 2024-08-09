@@ -65,9 +65,16 @@ proc run_vivado_simulation {tb log_fd vivadoPath project_dir xml_fd} {
     # Run simulation and capture output
     set result [catch {
         set output [exec $cmd]
+        # Debugging: log the full command and output
+        puts $log_fd "Command executed: $cmd"
         puts $log_fd "Simulation output: $output"
         return 0
     } err_msg]
+
+    # Log error message if any
+    if {$result != 0} {
+        puts $log_fd "Error encountered: $err_msg"
+    }
 
     # Determine result and write to XML
     set status "failed"
@@ -79,7 +86,7 @@ proc run_vivado_simulation {tb log_fd vivadoPath project_dir xml_fd} {
             set status "skipped"
         }
     } else {
-        # If there was an error, include the error message in the output
+        # Append the error message to the output
         set output "$err_msg\n$output"
     }
 
