@@ -1,8 +1,9 @@
 import sys
 import xml.etree.ElementTree as ET
+import re
 
 def parse_simulation_results(xml_file_path):
-    """Parse the simulation results XML file to extract test results."""
+    """Parse the simulation results XML file to extract test results and architecture information."""
     test_results = []
 
     try:
@@ -12,31 +13,47 @@ def parse_simulation_results(xml_file_path):
         for testcase in root.findall('testcase'):
             test_name = testcase.get('name')
             status = testcase.get('status', 'FAILED')
+            
+            # Extract architecture from the test name or other relevant attributes
+            architecture = extract_architecture(test_name)
+            
+            # Append results with architecture information
             if status == 'PASSED':
                 status = 'passed'
             elif status == 'SKIPPED':
                 status = 'skipped'
             else:
                 status = 'failed'
-            test_results.append((test_name, status))
+            test_results.append((test_name, architecture, status))
     except Exception as e:
         print(f"Error parsing XML file: {e}")
     
     return test_results
 
+def extract_architecture(test_name):
+    """Extract architecture name from the test name."""
+    # Example extraction logic; adjust the regex or logic based on your specific naming convention
+    match = re.search(r'OF\s+(\w+)\s+IS', test_name, re.IGNORECASE)
+    return match.group(1) if match else 'unknown'
+
 def create_junit_xml(test_results, output_file_path):
-    """Create a JUnit XML report from test results."""
-    # Create a JUnit XML report
-    testsuite = ET.Element('testsuite', name='Simulation Results', tests=str(len(test_results)))
-    
-    for test_name, status in test_results:
-        testcase = ET.SubElement(testsuite, 'testcase', name=test_name)
+    """Create a JUnit XML report from test results, grouping by architecture."""
+    # Create the root element for the JUnit XML report
+    testsuites = ET.Element('testsuites')
+
+    # Group results by architecture
+    architectures = {}
+    for test_name, architecture, status in test_results:
+        if architecture not in architectures:
+            architectures[architecture] = ET.SubElement(testsuites, 'testsuite', name=architecture)
+        
+        testcase = ET.SubElement(architectures[architecture], 'testcase', name=test_name, module=architecture, status=status)
         if status == 'failed':
             ET.SubElement(testcase, 'failure', message='Test failed')
         elif status == 'skipped':
             ET.SubElement(testcase, 'skipped')
     
-    tree = ET.ElementTree(testsuite)
+    tree = ET.ElementTree(testsuites)
     try:
         with open(output_file_path, 'wb') as file:
             tree.write(file, encoding='utf-8', xml_declaration=True)
