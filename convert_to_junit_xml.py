@@ -28,10 +28,10 @@ def parse_simulation_results(xml_file_path):
     
     return test_results
 
-def create_junit_xml(test_results, output_file_path, root_name):
+def create_junit_xml(test_results, output_file_path):
     """Create a JUnit XML report from test results, grouping by module."""
     # Create the root element for the JUnit XML report
-    testsuites = ET.Element('testsuites', name=root_name)
+    testsuites = ET.Element('testsuites')
 
     # Group results by module
     modules = {}
@@ -39,8 +39,7 @@ def create_junit_xml(test_results, output_file_path, root_name):
         if module not in modules:
             modules[module] = ET.SubElement(testsuites, 'testsuite', name=module)
         
-        classname = f"{module}.{test_name}"  # Create fully qualified class name
-        testcase = ET.SubElement(modules[module], 'testcase', name=test_name, classname=classname)
+        testcase = ET.SubElement(modules[module], 'testcase', name=test_name)
         if status == 'failed':
             ET.SubElement(testcase, 'failure', message='Test failed')
         elif status == 'skipped':
@@ -55,14 +54,13 @@ def create_junit_xml(test_results, output_file_path, root_name):
         print(f"Error writing JUnit XML file: {e}")
 
 if __name__ == "__main__":
-    if len(sys.argv) != 4:
-        print("Usage: python convert_to_junit_xml.py <simulation_results_xml_path> <output_file_path> <root_name>")
+    if len(sys.argv) != 3:
+        print("Usage: python convert_to_junit_xml.py <simulation_results_xml_path> <output_file_path>")
         sys.exit(1)
 
     xml_file_path = sys.argv[1]
     output_file_path = sys.argv[2]
-    root_name = sys.argv[3]
 
     test_results = parse_simulation_results(xml_file_path)
-    create_junit_xml(test_results, output_file_path, root_name)
+    create_junit_xml(test_results, output_file_path)
     print(f"JUnit XML report created at {output_file_path}")
