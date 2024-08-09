@@ -1,30 +1,19 @@
 import sys
 import xml.etree.ElementTree as ET
 
-def parse_simulation_results(xml_file_path):
-    """Parse the simulation results XML file to extract test results."""
+def parse_log_file(log_file_path):
+    """Parse the simulation log file to extract test results."""
     test_results = []
-
-    try:
-        tree = ET.parse(xml_file_path)
-        root = tree.getroot()
-
-        # Ensure the root element is 'testsuites'
-        if root.tag != 'testsuites':
-            raise ValueError("Root element must be 'testsuites'")
-
-        for testcase in root.findall('testcase'):
-            test_name = testcase.get('name')
-            status = testcase.get('status', 'FAILED')
-            if status == 'PASSED':
-                status = 'passed'
-            elif status == 'SKIPPED':
-                status = 'skipped'
-            else:
-                status = 'failed'
-            test_results.append((test_name, status))
-    except Exception as e:
-        print(f"Error parsing XML file: {e}")
+    
+    with open(log_file_path, 'r') as file:
+        lines = file.readlines()
+    
+    for line in lines:
+        if 'TEST' in line:
+            parts = line.split()
+            test_name = parts[1].strip("'")
+            test_status = parts[2]
+            test_results.append((test_name, test_status))
     
     return test_results
 
@@ -34,7 +23,7 @@ def create_junit_xml(test_results, output_file_path):
     
     for test_name, status in test_results:
         testcase = ET.SubElement(testsuite, 'testcase', name=test_name)
-        if status == 'failed':
+        if status == 'FAILED':
             ET.SubElement(testcase, 'failure', message='Test failed')
     
     tree = ET.ElementTree(testsuite)
@@ -43,12 +32,12 @@ def create_junit_xml(test_results, output_file_path):
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
-        print("Usage: python convert_to_junit_xml.py <xml_file_path> <output_file_path>")
+        print("Usage: python convert_to_junit_xml.py <log_file_path> <output_file_path>")
         sys.exit(1)
 
-    xml_file_path = sys.argv[1]
+    log_file_path = sys.argv[1]
     output_file_path = sys.argv[2]
 
-    test_results = parse_simulation_results(xml_file_path)
+    test_results = parse_log_file(log_file_path)
     create_junit_xml(test_results, output_file_path)
     print(f"JUnit XML report created at {output_file_path}")
