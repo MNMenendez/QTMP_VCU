@@ -160,4 +160,14 @@ pipeline {
     }
 
     post {
-        always 
+        always {
+            echo 'Cleaning up...'
+        }
+        success {
+            echo 'Tests passed successfully!'
+        }
+        failure {
+            echo 'Tests failed. Please check the logs.'
+        }
+    }
+}
