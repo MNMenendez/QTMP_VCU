@@ -105,7 +105,7 @@ pipeline {
             }
         }
         
-        // Optional: Skip the last 4 stages
+        // Skip the last 4 stages
         stage('Run Synthesis') {
             when {
                 expression { false }  // Skip this stage
@@ -171,4 +171,29 @@ pipeline {
   
                     git log -n 1 --pretty=format:"%H" >> %INFOFILE%
                     echo -n " %PROJ_NAME% " >> %INFOFILE%
-                   
+                    git describe --all >> %INFOFILE%
+  
+                    echo "" >> %INFOFILE%
+                    echo "Submodules:" >> %INFOFILE%
+                    git submodule status >> %INFOFILE%
+  
+                    copy %INFOFILE% %RELEASE_DIR%
+                    copy vivado\\%PROJ_NAME%.runs\\impl_1\\top.bit %RELEASE_DIR%\\%BITFILE%
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'Cleaning up...'
+        }
+        success {
+            echo 'Tests passed successfully!'
+        }
+        failure {
+            echo 'Tests failed. Please check the logs.'
+        }
+    }
+}
