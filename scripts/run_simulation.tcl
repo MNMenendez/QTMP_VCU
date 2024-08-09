@@ -56,24 +56,12 @@ if {[llength $testbenches] == 0} {
 }
 
 # Define procedure to run Vivado simulation
-proc run_vivado_simulation {tb log_fd vivadoPath project_file xml_fd project_dir} {
+proc run_vivado_simulation {tb log_fd vivadoPath project_file xml_fd} {
     set tb_name [file rootname [file tail $tb]]
     puts $log_fd "Launching simulation for testbench: $tb_name..."
 
-    # Create and execute Vivado commands directly
-    set cmd "$vivadoPath/vivado.bat -mode batch -tclargs [file join $project_dir simulate.tcl]"
-
-    # Create the Tcl script commands directly within this procedure
-    set tcl_script "open_project $project_file\n"
-    append tcl_script "set_property simulation.set {my_simulation} [current_fileset]\n"
-    append tcl_script "set_property top $tb_name [current_fileset]\n"
-    append tcl_script "launch_simulation -simset my_simulation\n"
-
-    # Write the commands to a temporary Tcl script file
-    set tcl_script_path [file join $project_dir simulate.tcl]
-    set script_fd [open $tcl_script_path "w"]
-    puts $script_fd $tcl_script
-    close $script_fd
+    # Create the Vivado command for simulation
+    set cmd "$vivadoPath/vivado.bat -mode batch -tcl -notrace -nolog -nojournal -source [list [list open_project $project_file] [list set_property simulation.set {my_simulation} [current_fileset]] [list set_property top $tb_name [current_fileset]] [list launch_simulation -simset my_simulation]]"
 
     # Run simulation and capture output
     set result [catch {
@@ -103,14 +91,11 @@ proc run_vivado_simulation {tb log_fd vivadoPath project_file xml_fd project_dir
     puts $xml_fd "<testcase name=\"$tb_name\" status=\"$status\">"
     puts $xml_fd "    <system-out><![CDATA[$output]]></system-out>"
     puts $xml_fd "</testcase>"
-
-    # Clean up the temporary Tcl script
-    file delete $tcl_script_path
 }
 
 # Launch simulations for each testbench
 foreach tb $testbenches {
-    run_vivado_simulation $tb $log_fd $vivadoPath $project_file $xml_fd $project_dir
+    run_vivado_simulation $tb $log_fd $vivadoPath $project_file $xml_fd
 }
 
 # Close the log file and XML file
