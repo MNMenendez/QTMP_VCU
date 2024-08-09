@@ -6,9 +6,9 @@ pipeline {
         TOP_LEVEL_ENTITY = 'hcmt_cpld_top'
         TEST_RESULTS_XML = 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\QTMP_VCU\\simulation_results.xml'
         CONVERT_SCRIPT = 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\convert_to_junit_xml.py'
+        SIM_JUNIT_XML = 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\converted_results.xml'
         VIVADO_PATH = 'C:\\Xilinx\\Vivado\\2024.1\\bin'
         SCRIPT_PATH = 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\scripts'
-        SIM_LOG_FILE = 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\QTMP_VCU.sim\\sim_1\\behav\\xsim\\simulate.log'
         GCC_PATH = 'C:\\MinGW\\bin'
     }
 
@@ -83,7 +83,7 @@ pipeline {
                         
                         // Publish the JUnit XML test results
                         echo "Publishing test results..."
-                        junit '**/${env.SIM_JUNIT_XML}'
+                        junit "**/${env.SIM_JUNIT_XML}"
                     } else {
                         echo "ERROR: Simulation results XML file not found: ${env.TEST_RESULTS_XML}"
                         currentBuild.result = 'UNSTABLE'
@@ -160,14 +160,4 @@ pipeline {
     }
 
     post {
-        always {
-            echo 'Cleaning up...'
-        }
-        success {
-            echo 'Tests passed successfully!'
-        }
-        failure {
-            echo 'Tests failed. Please check the logs.'
-        }
-    }
-}
+        always 
