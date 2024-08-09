@@ -104,7 +104,7 @@ pipeline {
                 }
             }
         }
-        
+
         // Skip the last 4 stages
         stage('Run Synthesis') {
             when {
