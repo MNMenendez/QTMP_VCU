@@ -66,6 +66,13 @@ proc run_vivado_simulation {tb log_fd vivadoPath project_dir xml_fd} {
     set result [catch {
         # Change to project directory
         cd $project_dir
+        # Create a simulation set
+        exec $vivadoPath/vivado.bat -mode batch -source - <<END
+create_project -force -part xc7z020clg484-1
+set_property simulation.set {my_simulation} [current_fileset]
+set_property top [file rootname [file tail $tb]] [current_fileset]
+launch_simulation -simset my_simulation
+END
         # Execute Vivado command
         set output [exec $cmd]
         # Debugging: log the full command and output
