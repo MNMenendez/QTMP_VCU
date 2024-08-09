@@ -86,9 +86,7 @@ proc run_modelsim_simulation {tb log_fd modelsimPath project_dir xml_fd} {
         set output "$err_msg\n$output"
     }
 
-    # Log simulation status
     puts $log_fd "Simulation for $tb_name $status."
-    # Write to XML
     puts $xml_fd "<testcase name=\"$tb_name\" status=\"$status\">"
     puts $xml_fd "    <system-out><![CDATA[$output]]></system-out>"
     puts $xml_fd "</testcase>"
