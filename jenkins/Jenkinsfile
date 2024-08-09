@@ -9,13 +9,62 @@ pipeline {
         VIVADO_PATH = 'C:\\Xilinx\\Vivado\\2024.1\\bin'
         SCRIPT_PATH = 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\scripts'
         GCC_PATH = 'C:\\MinGW\\bin'
+        SIM_JUNIT_XML = 'converted_results.xml'  // Ensure this matches the actual JUnit XML filename
     }
 
     stages {
+        stage('Cleanup') {
+            steps {
+                script {
+                    echo "Cleaning up previous test results..."
+                    bat '''
+                    if exist "%WORKSPACE%\\converted_results.xml" (
+                        del /q %WORKSPACE%\\converted_results.xml
+                    )
+                    '''
+                }
+            }
+        }
+
         stage('Create Project') {
             steps {
                 script {
-                    // Clean workspace and initialize repository steps...
+                    echo "Cleaning up workspace..."
+                    bat '''
+                    echo Deleting old files...
+                    del /q %WORKSPACE%\\*.*
+                    echo Deleting old directories...
+                    for /d %%p in (%WORKSPACE%\\*) do rd /s /q "%%p"
+                    '''
+                    
+                    echo "Initializing repository..."
+                    bat '''
+                    if not exist ".git" (
+                        echo Repository not initialized. Cloning repository...
+                        "%GIT_PATH%" clone https://github.com/MNMenendez/QTMP_VCU.git .
+                    ) else (
+                        echo Repository already initialized. Checking out branch and pulling latest changes...
+                        "%GIT_PATH%" fetch --all
+                        "%GIT_PATH%" checkout main || "%GIT_PATH%" checkout -b main
+                        "%GIT_PATH%" reset --hard origin/main
+                        "%GIT_PATH%" pull origin main
+                    )
+                    '''
+                    
+                    echo "Verifying files in workspace..."
+                    bat 'dir'
+                    bat 'dir "C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\source"'
+                    bat 'dir "C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\testbenches"'
+                    
+                    echo "Vivado Path: ${env.VIVADO_PATH}"
+                    
+                    // Update PATH to include GCC path
+                    bat "set PATH=%GCC_PATH%;%PATH%"
+                    
+                    echo "Creating Vivado project..."
+                    bat """
+                    "%VIVADO_PATH%\\vivado" -mode batch -source ${env.SCRIPT_PATH}\\create_vivado_proj.tcl
+                    """
                 }
             }
         }
@@ -24,7 +73,10 @@ pipeline {
             steps {
                 script {
                     echo "Running Vivado simulation and processing results..."
-
+                    
+                    // Ensure GCC path is included in the PATH for this stage
+                    bat "set PATH=%GCC_PATH%;%PATH%"
+        
                     // Run the simulation
                     bat """
                     "%VIVADO_PATH%\\vivado" -mode batch -source ${env.SCRIPT_PATH}\\run_simulation.tcl
@@ -40,11 +92,11 @@ pipeline {
                         
                         // Archive the JUnit XML test results
                         echo "Archiving test results..."
-                        archiveArtifacts artifacts: "converted_results.xml", allowEmptyArchive: true
+                        archiveArtifacts artifacts: "${env.SIM_JUNIT_XML}", allowEmptyArchive: true
                         
                         // Publish the JUnit XML test results
                         echo "Publishing test results..."
-                        junit '**/converted_results.xml'
+                        junit "${env.SIM_JUNIT_XML}"
                     } else {
                         echo "ERROR: Simulation results XML file not found: ${env.TEST_RESULTS_XML}"
                         currentBuild.result = 'UNSTABLE'
@@ -53,7 +105,84 @@ pipeline {
             }
         }
 
-        // Skip remaining stages...
+        // Skip the last 4 stages
+        stage('Run Synthesis') {
+            when {
+                expression { false }  // Skip this stage
+            }
+            steps {
+                script {
+                    echo "Running Vivado synthesis..."
+                    // Ensure GCC path is included in the PATH for this stage
+                    bat "set PATH=%GCC_PATH%;%PATH%"
+                    bat """
+                    "%VIVADO_PATH%\\vivado" -mode batch -source ${env.SCRIPT_PATH}\\run_synthesis.tcl
+                    """
+                }
+            }
+        }
+
+        stage('Run Implementation') {
+            when {
+                expression { false }  // Skip this stage
+            }
+            steps {
+                script {
+                    echo "Running Vivado implementation..."
+                    // Ensure GCC path is included in the PATH for this stage
+                    bat "set PATH=%GCC_PATH%;%PATH%"
+                    bat """
+                    "%VIVADO_PATH%\\vivado" -mode batch -source ${env.SCRIPT_PATH}\\run_implementation.tcl
+                    """
+                }
+            }
+        }
+
+        stage('Generate Bitstream') {
+            when {
+                expression { false }  // Skip this stage
+            }
+            steps {
+                script {
+                    echo "Generating bitstream with Vivado..."
+                    // Ensure GCC path is included in the PATH for this stage
+                    bat "set PATH=%GCC_PATH%;%PATH%"
+                    bat """
+                    "%VIVADO_PATH%\\vivado" -mode batch -source ${env.SCRIPT_PATH}\\generate_bitstream.tcl
+                    """
+                }
+            }
+        }
+
+        stage('Release Bitfile') {
+            when {
+                expression { false }  // Skip this stage
+            }
+            steps {
+                script {
+                    echo "Releasing bitfile..."
+                    bat '''
+                    set PROJ_NAME=QTMP_VCU
+                    set RELEASE_DIR=C:\\path\\to\\release\\directory
+  
+                    set BASE_NAME=%PROJ_NAME%-%DATE:~-4%-%DATE:~4,2%-%DATE:~7,2%-%TIME:~0,2%-%TIME:~3,2%
+                    set BITFILE=%BASE_NAME%.bit
+                    set INFOFILE=%BASE_NAME%.txt
+  
+                    git log -n 1 --pretty=format:"%H" >> %INFOFILE%
+                    echo -n " %PROJ_NAME% " >> %INFOFILE%
+                    git describe --all >> %INFOFILE%
+  
+                    echo "" >> %INFOFILE%
+                    echo "Submodules:" >> %INFOFILE%
+                    git submodule status >> %INFOFILE%
+  
+                    copy %INFOFILE% %RELEASE_DIR%
+                    copy vivado\\%PROJ_NAME%.runs\\impl_1\\top.bit %RELEASE_DIR%\\%BITFILE%
+                    '''
+                }
+            }
+        }
     }
 
     post {
