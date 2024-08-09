@@ -6,7 +6,7 @@ pipeline {
         TOP_LEVEL_ENTITY = 'hcmt_cpld_top'
         TEST_RESULTS_XML = 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\QTMP_VCU\\simulation_results.xml'
         CONVERT_SCRIPT = 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\convert_to_junit_xml.py'
-        VIVADO_PATH = 'C:\\Xilinx\\Vivado\\2024.1\\bin'
+        MODELSIM_PATH = 'C:\\modeltech64_10.6d\\win64'
         SCRIPT_PATH = 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\scripts'
         SIM_LOG_FILE = 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\QTMP_VCU.sim\\sim_1\\behav\\xsim\\simulate.log'
         GCC_PATH = 'C:\\MinGW\\bin'  // Updated GCC path
@@ -43,14 +43,14 @@ pipeline {
                     bat 'dir "C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\source"'
                     bat 'dir "C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\testbenches"'
                     
-                    echo "Vivado Path: ${env.VIVADO_PATH}"
+                    echo "ModelSim Path: ${env.MODELSIM_PATH}"
                     
                     // Update PATH to include GCC path
                     bat "set PATH=%GCC_PATH%;%PATH%"
                     
-                    echo "Creating Vivado project..."
+                    echo "Creating ModelSim project..."
                     bat """
-                    "%VIVADO_PATH%\\vivado" -mode batch -source ${env.SCRIPT_PATH}\\create_vivado_proj.tcl
+                    "%MODELSIM_PATH%\\vlib work
                     """
                 }
             }
@@ -59,18 +59,21 @@ pipeline {
         stage('Run Simulation and Test Results') {
             steps {
                 script {
-                    echo "Running Vivado simulation and processing results..."
+                    echo "Running ModelSim simulation and processing results..."
                     
                     // Ensure GCC path is included in the PATH for this stage
                     bat "set PATH=%GCC_PATH%;%PATH%"
 
                     // Run the simulation
                     bat """
-                    "%VIVADO_PATH%\\vivado" -mode batch -source ${env.SCRIPT_PATH}\\run_simulation.tcl
+                    "%MODELSIM_PATH%\\vsim" -c -do "run -all; quit;" -log ${env.SIM_LOG_FILE}
                     """
 
+                    // Add a short delay to ensure the file is completely written
+                    sleep(time: 10, unit: 'SECONDS')
+
                     // Check if simulation results XML file exists
-                    if (fileExists('${env.TEST_RESULTS_XML}')) {
+                    if (fileExists("${env.TEST_RESULTS_XML}")) {
                         echo "Simulation results XML file found: ${env.TEST_RESULTS_XML}"
                         
                         // Convert the simulation results XML to JUnit XML format
@@ -95,11 +98,11 @@ pipeline {
         stage('Run Synthesis') {
             steps {
                 script {
-                    echo "Running Vivado synthesis..."
+                    echo "Running ModelSim synthesis..."
                     // Ensure GCC path is included in the PATH for this stage
                     bat "set PATH=%GCC_PATH%;%PATH%"
                     bat """
-                    "%VIVADO_PATH%\\vivado" -mode batch -source ${env.SCRIPT_PATH}\\run_synthesis.tcl
+                    "%MODELSIM_PATH%\\vlib work
                     """
                 }
             }
@@ -108,11 +111,11 @@ pipeline {
         stage('Run Implementation') {
             steps {
                 script {
-                    echo "Running Vivado implementation..."
+                    echo "Running ModelSim implementation..."
                     // Ensure GCC path is included in the PATH for this stage
                     bat "set PATH=%GCC_PATH%;%PATH%"
                     bat """
-                    "%VIVADO_PATH%\\vivado" -mode batch -source ${env.SCRIPT_PATH}\\run_implementation.tcl
+                    "%MODELSIM_PATH%\\vlib work
                     """
                 }
             }
@@ -121,11 +124,11 @@ pipeline {
         stage('Generate Bitstream') {
             steps {
                 script {
-                    echo "Generating bitstream with Vivado..."
+                    echo "Generating bitstream with ModelSim..."
                     // Ensure GCC path is included in the PATH for this stage
                     bat "set PATH=%GCC_PATH%;%PATH%"
                     bat """
-                    "%VIVADO_PATH%\\vivado" -mode batch -source ${env.SCRIPT_PATH}\\generate_bitstream.tcl
+                    "%MODELSIM_PATH%\\vlib work
                     """
                 }
             }
@@ -152,7 +155,7 @@ pipeline {
                     git submodule status >> %INFOFILE%
   
                     copy %INFOFILE% %RELEASE_DIR%
-                    copy vivado\\%PROJ_NAME%.runs\\impl_1\\top.bit %RELEASE_DIR%\\%BITFILE%
+                    copy modeltech64\\%PROJ_NAME%.runs\\impl_1\\top.bit %RELEASE_DIR%\\%BITFILE%
                     '''
                 }
             }
