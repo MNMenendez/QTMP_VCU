@@ -57,40 +57,47 @@ pipeline {
         }
 
         stage('Run Simulation and Test Results') {
-            steps {
-                script {
-                    echo "Running Vivado simulation and processing results..."
-                    
-                    // Ensure GCC path is included in the PATH for this stage
-                    bat "set PATH=%GCC_PATH%;%PATH%"
+    steps {
+        script {
+            echo "Running ModelSim simulation and processing results..."
 
-                    // Run the simulation
-                    bat """
-                    "%VIVADO_PATH%\\vivado" -mode batch -source ${env.SCRIPT_PATH}\\run_simulation.tcl
-                    """
+            // Ensure GCC path is included in the PATH for this stage
+            bat "set PATH=%GCC_PATH%;%PATH%"
 
-                    // Check if simulation results XML file exists
-                    if (fileExists('${env.TEST_RESULTS_XML}')) {
-                        echo "Simulation results XML file found: ${env.TEST_RESULTS_XML}"
-                        
-                        // Convert the simulation results XML to JUnit XML format
-                        echo "Converting simulation results to JUnit XML..."
-                        bat "python ${env.CONVERT_SCRIPT} ${env.SIM_LOG_FILE} ${env.TEST_RESULTS_XML}"
-                        
-                        // Archive the JUnit XML test results
-                        echo "Archiving test results..."
-                        archiveArtifacts artifacts: "${env.TEST_RESULTS_XML}", allowEmptyArchive: true
-                        
-                        // Publish the JUnit XML test results
-                        echo "Publishing test results..."
-                        junit '**/${env.TEST_RESULTS_XML}'
-                    } else {
-                        echo "ERROR: Simulation results XML file not found: ${env.TEST_RESULTS_XML}"
-                        currentBuild.result = 'UNSTABLE'
-                    }
-                }
+            // Run the simulation with ModelSim
+            bat """
+            "%MODELSIM_PATH%\\vsim" -c -do "run -all; quit;" -log ${env.SIM_LOG_FILE}
+            """
+
+            // Add a short delay to ensure the file is completely written
+            sleep(time: 10, unit: 'SECONDS')
+
+            // Print the contents of the directory for debugging
+            echo "Checking contents of the directory:"
+            bat 'dir C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\QTMP_VCU'
+
+            // Check if simulation results XML file exists
+            if (fileExists("${env.TEST_RESULTS_XML}")) {
+                echo "Simulation results XML file found: ${env.TEST_RESULTS_XML}"
+                
+                // Convert the simulation results XML to JUnit XML format
+                echo "Converting simulation results to JUnit XML..."
+                bat "python ${env.CONVERT_SCRIPT} ${env.SIM_LOG_FILE} ${env.TEST_RESULTS_XML}"
+                
+                // Archive the JUnit XML test results
+                echo "Archiving test results..."
+                archiveArtifacts artifacts: "${env.TEST_RESULTS_XML}", allowEmptyArchive: true
+                
+                // Publish the JUnit XML test results
+                echo "Publishing test results..."
+                junit '**/${env.TEST_RESULTS_XML}'
+            } else {
+                echo "ERROR: Simulation results XML file not found: ${env.TEST_RESULTS_XML}"
+                currentBuild.result = 'UNSTABLE'
             }
         }
+    }
+}
 
         stage('Run Synthesis') {
             steps {
