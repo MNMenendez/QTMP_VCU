@@ -31,7 +31,7 @@ def parse_simulation_results(xml_file_path):
 def create_junit_xml(test_results, output_file_path):
     """Create a JUnit XML report from test results, grouping by module."""
     # Create the root element for the JUnit XML report
-    testsuites = ET.Element('testsuites')
+     testsuites = ET.Element('testsuites', name='QTMP_VCU')
 
     # Group results by module
     modules = {}
