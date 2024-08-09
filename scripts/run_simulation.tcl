@@ -56,15 +56,15 @@ if {[llength $testbenches] == 0} {
 }
 
 # Define procedure to run Vivado simulation
-proc run_vivado_simulation {tb log_fd vivadoPath project_file xml_fd} {
+proc run_vivado_simulation {tb log_fd vivadoPath project_file xml_fd project_dir} {
     set tb_name [file rootname [file tail $tb]]
     puts $log_fd "Launching simulation for testbench: $tb_name..."
 
     # Create the Vivado command for simulation
-    set cmd "$vivadoPath/vivado.bat -mode batch -source [file join $project_file script.tcl]"
+    set cmd "$vivadoPath/vivado.bat -mode batch -source [file join $project_dir script.tcl]"
 
     # Create the script file to be sourced by Vivado
-    set script_fd [open "$project_dir/script.tcl" "w"]
+    set script_fd [open [file join $project_dir script.tcl] "w"]
     puts $script_fd "open_project $project_file"
     puts $script_fd "set_property simulation.set {my_simulation} [current_fileset]"
     puts $script_fd "set_property top $tb_name [current_fileset]"
@@ -103,7 +103,7 @@ proc run_vivado_simulation {tb log_fd vivadoPath project_file xml_fd} {
 
 # Launch simulations for each testbench
 foreach tb $testbenches {
-    run_vivado_simulation $tb $log_fd $vivadoPath $project_file $xml_fd
+    run_vivado_simulation $tb $log_fd $vivadoPath $project_file $xml_fd $project_dir
 }
 
 # Close the log file and XML file
