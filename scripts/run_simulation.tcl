@@ -86,10 +86,14 @@ proc run_modelsim_simulation {tb log_fd modelsimPath project_dir xml_fd} {
         set output "$err_msg\n$output"
     }
 
-    puts $log_fd "Simulation for $tb_name $status."
-    puts $xml_fd "<testcase name=\"$tb_name\" status=\"$status\">"
-    puts $xml_fd "    <system-out><![CDATA[$output]]></system-out>"
-    puts $xml_fd "</testcase>"
+    # Write testcase element to XML
+    if {$status == "FAILED"} {
+        puts $xml_fd "<testcase name=\"$tb_name\" status=\"$status\"/>"
+    } else {
+        puts $xml_fd "<testcase name=\"$tb_name\" status=\"$status\">"
+        puts $xml_fd "    <system-out><![CDATA[$output]]></system-out>"
+        puts $xml_fd "</testcase>"
+    }
 }
 
 # Launch simulations for each testbench
