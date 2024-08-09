@@ -60,15 +60,19 @@ proc run_vivado_simulation {tb log_fd vivadoPath project_file xml_fd project_dir
     set tb_name [file rootname [file tail $tb]]
     puts $log_fd "Launching simulation for testbench: $tb_name..."
 
-    # Create the Vivado command for simulation
-    set cmd "$vivadoPath/vivado.bat -mode batch -source [file join $project_dir script.tcl]"
+    # Create and execute Vivado commands directly
+    set cmd "$vivadoPath/vivado.bat -mode batch -tclargs [file join $project_dir simulate.tcl]"
 
-    # Create the script file to be sourced by Vivado
-    set script_fd [open [file join $project_dir script.tcl] "w"]
-    puts $script_fd "open_project $project_file"
-    puts $script_fd "set_property simulation.set {my_simulation} [current_fileset]"
-    puts $script_fd "set_property top $tb_name [current_fileset]"
-    puts $script_fd "launch_simulation -simset my_simulation"
+    # Create the Tcl script commands directly within this procedure
+    set tcl_script "open_project $project_file\n"
+    append tcl_script "set_property simulation.set {my_simulation} [current_fileset]\n"
+    append tcl_script "set_property top $tb_name [current_fileset]\n"
+    append tcl_script "launch_simulation -simset my_simulation\n"
+
+    # Write the commands to a temporary Tcl script file
+    set tcl_script_path [file join $project_dir simulate.tcl]
+    set script_fd [open $tcl_script_path "w"]
+    puts $script_fd $tcl_script
     close $script_fd
 
     # Run simulation and capture output
@@ -91,7 +95,7 @@ proc run_vivado_simulation {tb log_fd vivadoPath project_file xml_fd project_dir
             set status "skipped"
         }
     } else {
-        # Append the error message to the output
+        # Handle error and capture the output
         set output "$err_msg\n$output"
     }
 
@@ -99,6 +103,9 @@ proc run_vivado_simulation {tb log_fd vivadoPath project_file xml_fd project_dir
     puts $xml_fd "<testcase name=\"$tb_name\" status=\"$status\">"
     puts $xml_fd "    <system-out><![CDATA[$output]]></system-out>"
     puts $xml_fd "</testcase>"
+
+    # Clean up the temporary Tcl script
+    file delete $tcl_script_path
 }
 
 # Launch simulations for each testbench
