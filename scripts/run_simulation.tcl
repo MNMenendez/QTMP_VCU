@@ -65,7 +65,7 @@ proc run_modelsim_simulation {tb log_fd modelsimPath project_dir xml_fd} {
     # Run simulation and capture output
     set result [catch {
         # Execute ModelSim command
-        set output [exec cmd]
+        set output [exec $cmd]
         # Debugging: log the full command and output
         puts $log_fd "Command executed: $cmd"
         puts $log_fd "Simulation output: $output"
@@ -104,5 +104,9 @@ foreach tb $testbenches {
 # Close the log file and XML file
 puts $log_fd "All simulations launched."
 close $log_fd
+
+# Ensure XML file is properly closed
 puts $xml_fd "</testsuites>"
 close $xml_fd
+
+puts "Simulation results saved to $results_xml"
