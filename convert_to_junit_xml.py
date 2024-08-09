@@ -46,7 +46,7 @@ def create_junit_xml(test_results, output_file_path):
             ET.SubElement(testcase, 'skipped')
     
     # Write the XML file
-    tree = ET.ElementTree(testsuites, name='QTMP_VCU')
+    tree = ET.ElementTree(testsuites)
     try:
         with open(output_file_path, 'wb') as file:
             tree.write(file, encoding='utf-8', xml_declaration=True)
