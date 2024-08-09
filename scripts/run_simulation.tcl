@@ -57,6 +57,7 @@ if {[llength $testbenches] == 0} {
 # Define procedure to run ModelSim simulation
 proc run_modelsim_simulation {tb log_fd modelsimPath project_dir xml_fd} {
     set tb_name [file rootname [file tail $tb]]
+    set architecture [file rootname [file tail $tb]]
     puts $log_fd "Launching simulation for testbench: $tb_name..."
 
     # Create the ModelSim command for simulation
@@ -88,9 +89,9 @@ proc run_modelsim_simulation {tb log_fd modelsimPath project_dir xml_fd} {
 
     # Write testcase element to XML
     if {$status == "FAILED"} {
-        puts $xml_fd "<testcase name=\"$tb_name\" status=\"$status\"/>"
+        puts $xml_fd "<testcase name=\"$tb_name\" module=\"$architecture\" status=\"$status\"/>"
     } else {
-        puts $xml_fd "<testcase name=\"$tb_name\" status=\"$status\">"
+        puts $xml_fd "<testcase name=\"$tb_name\" module=\"$architecture\" status=\"$status\">"
         puts $xml_fd "    <system-out><![CDATA[$output]]></system-out>"
         puts $xml_fd "</testcase>"
     }
