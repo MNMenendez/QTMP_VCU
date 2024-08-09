@@ -6,7 +6,7 @@ def parse_simulation_results(xml_file_path):
     test_results = []
 
     try:
-        # Parse the input XML file
+        # Parse the input XML file (read-only mode)
         tree = ET.parse(xml_file_path)
         root = tree.getroot()
 
