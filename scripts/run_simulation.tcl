@@ -1,8 +1,7 @@
 # Define directories and files
-set vivadoPath "C:/Xilinx/Vivado/2024.1/bin"
+set modelsimPath "C:/modeltech64_10.6d/win64"
 set testbench_dir "C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP/QTMP_VCU/QTMP_VCU.gen/testbenches"
 set project_dir "C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP/QTMP_VCU"
-set project_file "$project_dir/QTMP_VCU.xpr"
 set simulation_log "$project_dir/simulation.log"
 set results_xml "$project_dir/simulation_results.xml"
 
@@ -55,18 +54,18 @@ if {[llength $testbenches] == 0} {
     exit
 }
 
-# Define procedure to run Vivado simulation
-proc run_vivado_simulation {tb log_fd vivadoPath project_file xml_fd} {
+# Define procedure to run ModelSim simulation
+proc run_modelsim_simulation {tb log_fd modelsimPath project_dir xml_fd} {
     set tb_name [file rootname [file tail $tb]]
     puts $log_fd "Launching simulation for testbench: $tb_name..."
 
-    # Create the Vivado command for simulation
-    set cmd "$vivadoPath/vivado.bat -mode batch -tcl -notrace -nolog -nojournal -source [list [list open_project $project_file] [list set_property simulation.set {my_simulation} [current_fileset]] [list set_property top $tb_name [current_fileset]] [list launch_simulation -simset my_simulation]]"
+    # Create the ModelSim command for simulation
+    set cmd "$modelsimPath/vlog -work work $tb && $modelsimPath/vsim -c -do \"run -all; quit;\" work.$tb_name"
 
     # Run simulation and capture output
     set result [catch {
-        # Execute Vivado command
-        set output [exec $cmd]
+        # Execute ModelSim command
+        set output [exec cmd]
         # Debugging: log the full command and output
         puts $log_fd "Command executed: $cmd"
         puts $log_fd "Simulation output: $output"
@@ -77,7 +76,7 @@ proc run_vivado_simulation {tb log_fd vivadoPath project_file xml_fd} {
     set status "FAILED"
     if {$result == 0} {
         # Check if the simulation output contains the string indicating success
-        if {[string match "*finished successfully*" $output]} {
+        if {[string match "*# Simulation complete*" $output]} {
             set status "PASSED"
         } elseif {[string match "*skipped*" $output]} {
             set status "SKIPPED"
@@ -96,7 +95,7 @@ proc run_vivado_simulation {tb log_fd vivadoPath project_file xml_fd} {
 # Launch simulations for each testbench
 foreach tb $testbenches {
     catch {
-        run_vivado_simulation $tb $log_fd $vivadoPath $project_file $xml_fd
+        run_modelsim_simulation $tb $log_fd $modelsimPath $project_dir $xml_fd
     } err_msg {
         puts $log_fd "ERROR during simulation of [file rootname [file tail $tb]]: $err_msg"
     }
