@@ -95,9 +95,7 @@ proc run_vivado_simulation {tb log_fd vivadoPath project_dir xml_fd} {
 
 # Launch simulations for each testbench
 foreach tb $testbenches {
-    catch {
-        run_vivado_simulation $tb $log_fd $vivadoPath $project_dir $xml_fd
-    } err_msg
+    run_vivado_simulation $tb $log_fd $vivadoPath $project_dir $xml_fd
 }
 
 # Close the log file and XML file
