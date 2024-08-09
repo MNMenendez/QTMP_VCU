@@ -112,12 +112,7 @@ pipeline {
             }
             steps {
                 script {
-                    echo "Running Vivado synthesis..."
-                    // Ensure GCC path is included in the PATH for this stage
-                    bat "set PATH=%GCC_PATH%;%PATH%"
-                    bat """
-                    "%VIVADO_PATH%\\vivado" -mode batch -source ${env.SCRIPT_PATH}\\run_synthesis.tcl
-                    """
+                    echo "Skipping Vivado synthesis..."
                 }
             }
         }
@@ -128,12 +123,7 @@ pipeline {
             }
             steps {
                 script {
-                    echo "Running Vivado implementation..."
-                    // Ensure GCC path is included in the PATH for this stage
-                    bat "set PATH=%GCC_PATH%;%PATH%"
-                    bat """
-                    "%VIVADO_PATH%\\vivado" -mode batch -source ${env.SCRIPT_PATH}\\run_implementation.tcl
-                    """
+                    echo "Skipping Vivado implementation..."
                 }
             }
         }
@@ -144,12 +134,7 @@ pipeline {
             }
             steps {
                 script {
-                    echo "Generating bitstream with Vivado..."
-                    // Ensure GCC path is included in the PATH for this stage
-                    bat "set PATH=%GCC_PATH%;%PATH%"
-                    bat """
-                    "%VIVADO_PATH%\\vivado" -mode batch -source ${env.SCRIPT_PATH}\\generate_bitstream.tcl
-                    """
+                    echo "Skipping bitstream generation..."
                 }
             }
         }
@@ -160,26 +145,7 @@ pipeline {
             }
             steps {
                 script {
-                    echo "Releasing bitfile..."
-                    bat '''
-                    set PROJ_NAME=QTMP_VCU
-                    set RELEASE_DIR=C:\\path\\to\\release\\directory
-  
-                    set BASE_NAME=%PROJ_NAME%-%DATE:~-4%-%DATE:~4,2%-%DATE:~7,2%-%TIME:~0,2%-%TIME:~3,2%
-                    set BITFILE=%BASE_NAME%.bit
-                    set INFOFILE=%BASE_NAME%.txt
-  
-                    git log -n 1 --pretty=format:"%H" >> %INFOFILE%
-                    echo -n " %PROJ_NAME% " >> %INFOFILE%
-                    git describe --all >> %INFOFILE%
-  
-                    echo "" >> %INFOFILE%
-                    echo "Submodules:" >> %INFOFILE%
-                    git submodule status >> %INFOFILE%
-  
-                    copy %INFOFILE% %RELEASE_DIR%
-                    copy vivado\\%PROJ_NAME%.runs\\impl_1\\top.bit %RELEASE_DIR%\\%BITFILE%
-                    '''
+                    echo "Skipping bitfile release..."
                 }
             }
         }
