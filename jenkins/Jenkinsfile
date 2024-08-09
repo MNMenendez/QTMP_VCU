@@ -6,7 +6,7 @@ pipeline {
         TOP_LEVEL_ENTITY = 'hcmt_cpld_top'
         TEST_RESULTS_XML = 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\QTMP_VCU\\simulation_results.xml'
         CONVERT_SCRIPT = 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\convert_to_junit_xml.py'
-        SIM_JUNIT_XML = 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\converted_results.xml'
+        SIM_JUNIT_XML = 'converted_results.xml'  // Use a relative path here
         VIVADO_PATH = 'C:\\Xilinx\\Vivado\\2024.1\\bin'
         SCRIPT_PATH = 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\scripts'
         GCC_PATH = 'C:\\MinGW\\bin'
@@ -93,6 +93,9 @@ pipeline {
         }
         
         stage('Run Synthesis') {
+            when {
+                expression { return false } // Skip this stage
+            }
             steps {
                 script {
                     echo "Running Vivado synthesis..."
@@ -106,6 +109,9 @@ pipeline {
         }
 
         stage('Run Implementation') {
+            when {
+                expression { return false } // Skip this stage
+            }
             steps {
                 script {
                     echo "Running Vivado implementation..."
@@ -119,6 +125,9 @@ pipeline {
         }
 
         stage('Generate Bitstream') {
+            when {
+                expression { return false } // Skip this stage
+            }
             steps {
                 script {
                     echo "Generating bitstream with Vivado..."
@@ -132,6 +141,9 @@ pipeline {
         }
 
         stage('Release Bitfile') {
+            when {
+                expression { return false } // Skip this stage
+            }
             steps {
                 script {
                     echo "Releasing bitfile..."
