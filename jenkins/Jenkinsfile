@@ -6,7 +6,7 @@ pipeline {
         TOP_LEVEL_ENTITY = 'hcmt_cpld_top'
         TEST_RESULTS_XML = 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\QTMP_VCU\\simulation_results.xml'
         CONVERT_SCRIPT = 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\convert_to_junit_xml.py'
-        MODELSIM_PATH = 'C:\\modeltech64_10.6d\\win64'
+        VIVADO_PATH = 'C:\\Xilinx\\Vivado\\2024.1\\bin'
         SCRIPT_PATH = 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\scripts'
         SIM_LOG_FILE = 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\QTMP_VCU.sim\\sim_1\\behav\\xsim\\simulate.log'
         GCC_PATH = 'C:\\MinGW\\bin'  // Updated GCC path
@@ -59,28 +59,18 @@ pipeline {
         stage('Run Simulation and Test Results') {
             steps {
                 script {
-                    echo "Running ModelSim simulation and processing results..."
+                    echo "Running Vivado simulation and processing results..."
                     
                     // Ensure GCC path is included in the PATH for this stage
                     bat "set PATH=%GCC_PATH%;%PATH%"
 
-                    // Add ModelSim to PATH
-                    bat "set PATH=%MODELSIM_PATH%;%PATH%"
-
-                    // Run the simulation with ModelSim
+                    // Run the simulation
                     bat """
-                    "%MODELSIM_PATH%\\vsim" -c -do "run -all; quit;"
+                    "%VIVADO_PATH%\\vivado" -mode batch -source ${env.SCRIPT_PATH}\\run_simulation.tcl
                     """
 
-                    // Add a short delay to ensure the file is completely written
-                    sleep(time: 10, unit: 'SECONDS')
-
-                    // Print the contents of the directory for debugging
-                    echo "Checking contents of the directory:"
-                    bat 'dir C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\QTMP_VCU'
-
                     // Check if simulation results XML file exists
-                    if (fileExists("${env.TEST_RESULTS_XML}")) {
+                    if (fileExists('${env.TEST_RESULTS_XML}')) {
                         echo "Simulation results XML file found: ${env.TEST_RESULTS_XML}"
                         
                         // Convert the simulation results XML to JUnit XML format
