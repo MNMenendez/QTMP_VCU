@@ -2,6 +2,7 @@
 set vivadoPath "C:/Xilinx/Vivado/2024.1/bin"
 set testbench_dir "C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP/QTMP_VCU/QTMP_VCU.gen/testbenches"
 set project_dir "C:/ProgramData/Jenkins/.jenkins/workspace/ART_QTMP/QTMP_VCU"
+set project_file "$project_dir/QTMP_VCU.xpr"
 set simulation_log "$project_dir/simulation.log"
 set results_xml "$project_dir/simulation_results.xml"
 
@@ -55,24 +56,23 @@ if {[llength $testbenches] == 0} {
 }
 
 # Define procedure to run Vivado simulation
-proc run_vivado_simulation {tb log_fd vivadoPath project_dir xml_fd} {
+proc run_vivado_simulation {tb log_fd vivadoPath project_file xml_fd} {
     set tb_name [file rootname [file tail $tb]]
     puts $log_fd "Launching simulation for testbench: $tb_name..."
 
     # Create the Vivado command for simulation
-    set cmd "$vivadoPath/vivado.bat -mode batch -source $tb"
+    set cmd "$vivadoPath/vivado.bat -mode batch -source [file join $project_file script.tcl]"
+
+    # Create the script file to be sourced by Vivado
+    set script_fd [open "$project_dir/script.tcl" "w"]
+    puts $script_fd "open_project $project_file"
+    puts $script_fd "set_property simulation.set {my_simulation} [current_fileset]"
+    puts $script_fd "set_property top $tb_name [current_fileset]"
+    puts $script_fd "launch_simulation -simset my_simulation"
+    close $script_fd
 
     # Run simulation and capture output
     set result [catch {
-        # Change to project directory
-        cd $project_dir
-        # Create a simulation set
-        exec $vivadoPath/vivado.bat -mode batch -source - <<END
-create_project -force -part xc7z020clg484-1
-set_property simulation.set {my_simulation} [current_fileset]
-set_property top [file rootname [file tail $tb]] [current_fileset]
-launch_simulation -simset my_simulation
-END
         # Execute Vivado command
         set output [exec $cmd]
         # Debugging: log the full command and output
@@ -109,7 +109,7 @@ END
 # Launch simulations for each testbench
 foreach tb $testbenches {
     catch {
-        run_vivado_simulation $tb $log_fd $vivadoPath $project_dir $xml_fd
+        run_vivado_simulation $tb $log_fd $vivadoPath $project_file $xml_fd
     } err_msg
 }
 
