@@ -4,12 +4,12 @@ pipeline {
     environment {
         GIT_PATH = 'C:\\Users\\martin\\AppData\\Local\\Programs\\Git\\bin\\git.exe'
         TOP_LEVEL_ENTITY = 'hcmt_cpld_top'
-        TEST_RESULTS_XML = 'test_results.xml'
+        TEST_RESULTS_XML = 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\QTMP_VCU\\simulation_results.xml'
         CONVERT_SCRIPT = 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\convert_to_junit_xml.py'
         VIVADO_PATH = 'C:\\Xilinx\\Vivado\\2024.1\\bin'
         SCRIPT_PATH = 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\scripts'
         SIM_LOG_FILE = 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ART_QTMP\\QTMP_VCU.sim\\sim_1\\behav\\xsim\\simulate.log'
-        GCC_PATH = 'C:\\MinGW\\bin'  // Updated GCC path
+        GCC_PATH = 'C:\\MinGW\\bin'
     }
 
     stages {
@@ -70,7 +70,7 @@ pipeline {
                     """
 
                     // Check if simulation results XML file exists
-                    if (fileExists('${env.TEST_RESULTS_XML}')) {
+                    if (fileExists("${env.TEST_RESULTS_XML}")) {
                         echo "Simulation results XML file found: ${env.TEST_RESULTS_XML}"
                         
                         // Convert the simulation results XML to JUnit XML format
