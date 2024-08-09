@@ -6,7 +6,6 @@ def parse_simulation_results(xml_file_path):
     test_results = []
 
     try:
-        # Parse the input XML file
         tree = ET.parse(xml_file_path)
         root = tree.getroot()
 
@@ -14,16 +13,15 @@ def parse_simulation_results(xml_file_path):
         if root.tag != 'testsuites':
             raise ValueError("Root element must be 'testsuites'")
 
-        # Extract test cases and their statuses
         for testcase in root.findall('testcase'):
             test_name = testcase.get('name')
             status = testcase.get('status', 'FAILED')
-            if status == 'FAILED':
-                status = 'failed'
-            elif status == 'PASSED':
+            if status == 'PASSED':
                 status = 'passed'
-            else:
+            elif status == 'SKIPPED':
                 status = 'skipped'
+            else:
+                status = 'failed'
             test_results.append((test_name, status))
     except Exception as e:
         print(f"Error parsing XML file: {e}")
@@ -38,16 +36,10 @@ def create_junit_xml(test_results, output_file_path):
         testcase = ET.SubElement(testsuite, 'testcase', name=test_name)
         if status == 'failed':
             ET.SubElement(testcase, 'failure', message='Test failed')
-        elif status == 'skipped':
-            ET.SubElement(testcase, 'skipped')
     
     tree = ET.ElementTree(testsuite)
-    try:
-        # Write the JUnit XML report to the output file
-        with open(output_file_path, 'wb') as file:
-            tree.write(file)
-    except Exception as e:
-        print(f"Error writing JUnit XML file: {e}")
+    with open(output_file_path, 'wb') as file:
+        tree.write(file)
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
@@ -57,7 +49,6 @@ if __name__ == "__main__":
     xml_file_path = sys.argv[1]
     output_file_path = sys.argv[2]
 
-    # Process the input XML and create the JUnit XML report
     test_results = parse_simulation_results(xml_file_path)
     create_junit_xml(test_results, output_file_path)
     print(f"JUnit XML report created at {output_file_path}")
