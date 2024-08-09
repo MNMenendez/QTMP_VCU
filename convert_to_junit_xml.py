@@ -24,7 +24,7 @@ def parse_simulation_results(xml_file_path):
 
 def create_junit_xml(test_results, output_file_path):
     """Create a JUnit XML report from test results, grouping by module."""
-    testsuites = ET.Element('testsuites', name='QTMP_VCU')
+    testsuites = ET.Element('testsuites', name='MyTestSuitesName')  # Change this name to what you want
     modules = {}
     for test_name, module, status in test_results:
         if module not in modules:
