@@ -78,6 +78,9 @@ proc run_vivado_simulation {tb log_fd vivadoPath project_dir xml_fd} {
         } elseif {[string match "*skipped*" $output]} {
             set status "skipped"
         }
+    } else {
+        # If there was an error, include the error message in the output
+        set output "$err_msg\n$output"
     }
 
     puts $log_fd "Simulation for $tb_name $status."
